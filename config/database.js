@@ -1,8 +1,11 @@
 const mongoose = require('mongoose');
 
+const DB_USER = 'rodrigojmsleite'
+const DB_PASSWORD = encodeURIComponent('9fX25aNisrBbryaq');
+
 const connectDB = async () => {
   try {
-    mongoose.connect('mongodb://admin:admin123@localhost:27017/link?authSource=admin', {
+    mongoose.connect(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@link.ramjwob.mongodb.net/?retryWrites=true&w=majority&appName=link`, {
         useNewUrlParser: true,
         useUnifiedTopology: true
       })
