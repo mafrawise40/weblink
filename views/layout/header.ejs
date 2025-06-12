@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+    <link rel="stylesheet" href="/css/style.css"> <!-- se tiver CSS -->
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/noticia/listagem">Cadastro Notícia</a> |
+            <% if (session && session.userId) { %>
+                <a href="/user/logout">Sair</a>
+            <% } else { %>
+                <a href="/user/login">Login</a>
+            <% } %>
+        </nav>
+        <hr>
+    </header>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="<%= metadata.url %>" />
+    <meta property="og:title" content="<%= metadata.title %>" />
+    <meta property="og:description" content="<%= metadata.description %>" />
+    <meta property="og:image" content="<%= metadata.image %>" />
+    <meta property="og:image:width" content="630" />
+    <meta property="og:image:height" content="1200" />
+
+
+    <title>
+        <%= noticia.titulo %>
+    </title>
+    <link rel="stylesheet" href="/css/noticia.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <style>
+        .descricao {
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ⚠️ Tela de erro de localização 
+    <div id="erroLocalizacao">
+        ... não foi possível carregar a notícia
+        <button onclick="tentarLoc();">Tentar novamente</button>
+    </div>
+    -->
+
+    <!-- ✅ Conteúdo da notícia -->
+    <div id="conteudoNoticia">
+        <!-- Cabeçalho -->
+        <header class="cabecalho">
+            <div class="logo">Viva <span>Notícia</span></div>
+            <nav class="menu">
+                <a href="#">Início</a>
+                <a href="#">Brasil</a>
+                <a href="#">Mundo</a>
+                <a href="#">Economia</a>
+                <a href="#">Esportes</a>
+                <a href="#">Tecnologia</a>
+                <a href="#">Entretenimento</a>
+            </nav>
+            <div class="busca">
+                <input type="text" placeholder="Buscar...">
+                <button>🔍</button>
+            </div>
+        </header>
+
+        <!-- Faixa de categoria -->
+        <div style="text-align: center;" class="categoria">
+            <h2>BRASIL</h2>
+        </div>
+
+        <!-- Conteúdo principal -->
+        <main class="conteudo">
+            <h1>
+                <%= noticia.titulo %>
+            </h1>
+
+            <p class="autor">
+                Por <%= noticia.autor %> •
+                <%= new Date(noticia.criadoEm).toLocaleDateString('pt-BR') %>
+                <%= new Date(noticia.criadoEm).toLocaleTimeString('pt-BR') %>
+            
+                <% if (noticia.atualizadoEm && noticia.atualizadoEm.getTime() !== noticia.criadoEm.getTime()) { %>
+                    • Atualizado em
+                    <%= new Date(noticia.atualizadoEm).toLocaleDateString('pt-BR') %>
+                    às
+                    <%= new Date(noticia.atualizadoEm).toLocaleTimeString('pt-BR') %>
+                <% } %>
+            </p>
+
+            <div class="botoes">
+                <button>🔗 Compartilhar</button>
+                <button>💬 WhatsApp</button>
+                <button>👍 Facebook</button>
+            </div>
+
+            <p class="descricao">
+                <%- noticia.corpo %>
+            </p>
+
+
+            <div class="video">
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 📍 Script de geolocalização -->
+    <script src="/js/localizacao.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,147 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f6fa;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 700px;
+    margin: 50px auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    color: #555;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    font-size: 15px;
+    background-color: #fff;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+input[type="file"] {
+    padding: 6px;
+}
+
+button,
+input[type="submit"] {
+    background-color: #3498db;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover,
+input[type="submit"]:hover {
+    background-color: #2980b9;
+}
+
+a {
+    color: #3498db;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+footer {
+    text-align: center;
+    color: #888;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    font-size: 15px;
+    background-color: #fff;
+    appearance: none;        /* Remove estilo padrão do select */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3csvg%20width%3d%2210%22%20height%3d%227%22%20viewBox%3d%220%200%2010%207%22%20xmlns%3d%22http%3a//www.w3.org/2000/svg%22%3e%3cpath%20d%3d%22M0%200l5%207%205-7z%22%20fill%3d%22%23666%22/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px 7px;
+}
+
+input[type="date"] {
+    appearance: none; /* Remove estilo nativo */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  
+    padding: 8px 12px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+  
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  
+    cursor: pointer;
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  input[type="date"]:hover {
+    border-color: #888;
+  }
+  
+  input[type="date"]:focus {
+    outline: none;
+    border-color: #4A90E2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.6);
+    background-color: #f0f8ff;
+  }
+  
+  /* Para ícone do calendário (em alguns navegadores): */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(35%) sepia(68%) saturate(744%) hue-rotate(193deg) brightness(91%) contrast(88%);
+    transition: filter 0.3s ease;
+  }
+  
+  input[type="date"]:hover::-webkit-calendar-picker-indicator {
+    filter: invert(40%) sepia(80%) saturate(1200%) hue-rotate(210deg) brightness(110%) contrast(95%);
+  }
+  

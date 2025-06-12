@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Listagem de Notícias</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .container {
+            width: 100%;
+            padding: 20px 30px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #004488;
+            font-size: 1.8rem;
+        }
+
+        .btn-nova {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-bottom: 15px;
+            transition: background 0.3s;
+        }
+
+        .btn-nova:hover {
+            background-color: #0056b3;
+        }
+
+        .tabela-container {
+            overflow-x: auto;
+        }
+
+
+
+        .btn {
+            padding: 6px 10px;
+            border-radius: 4px;
+            color: white;
+            text-decoration: none;
+            margin-right: 5px;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-visualizar {
+            background-color: #17a2b8;
+        }
+
+        .btn-visualizar:hover {
+            background-color: #117a8b;
+        }
+
+        .btn-editar {
+            background-color: #007bff;
+        }
+
+        .btn-editar:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-excluir {
+            background-color: #dc3545;
+        }
+
+        .btn-excluir:hover {
+            background-color: #a71d2a;
+        }
+
+        .table-responsive-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 600px;
+            /* largura mínima para não colapsar em mobile */
+        }
+
+        thead th {
+            background-color: #f5f5f5;
+            padding: 10px;
+            text-align: left;
+        }
+
+        tbody td {
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+
+        /* Remove qualquer comportamento mobile "empilhado" */
+        @media (max-width: 768px) {
+            thead {
+                display: table-header-group !important;
+            }
+
+            tbody tr,
+            tbody td {
+                display: table-row !important;
+                width: auto !important;
+            }
+
+            tbody td::before {
+                content: none !important;
+            }
+
+            .truncate {
+                max-width: 300px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        .btn-desativar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            /* espaço entre ícone e texto */
+            background-color: #e74c3c;
+            /* vermelho forte */
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .btn-desativar:hover {
+            background-color: #c0392b;
+            /* vermelho mais escuro no hover */
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-ativar {
+            background-color: #28a745;
+            /* verde padrão bootstrap */
+            color: #fff !important;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-decoration: none;
+            border: 2px solid #1e7e34;
+            /* borda verde escura para contraste */
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+
+        .btn-ativar:hover {
+            background-color: #1e7e34;
+            border-color: #155724;
+            color: #fff !important;
+            text-decoration: none;
+        }
+    </style>
+
+
+
+
+</head>
+
+<body>
+
+    <%- include('layout/header') %>
+
+        <div class="container">
+            <h1>Listagem de Notícias</h1>
+
+            <a href="/noticia/cadastro" class="btn-nova"><i class="fas fa-plus"></i> Nova Notícia</a>
+
+            <div class="tabela-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th>Validade (dias)</th>
+                            <th>Criado em</th>
+                            <th>Link</th>
+                            <th>Acessos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% noticias.forEach(noticia=> { %>
+                            <tr>
+                                <td class="titulo-coluna">
+                                    <%= noticia.titulo %>
+                                </td>
+                                <td data-label="Autor">
+                                    <%= noticia.autor %>
+                                </td>
+                                <td data-label="Validade">
+                                    <%= noticia.validade %>
+                                </td>
+                                <td data-label="Criado em">
+                                    <%= new Date(noticia.criadoEm).toLocaleDateString() %>
+                                </td>
+                                <td class="link-coluna" data-label="Link"
+                                    data-link="<%= linksEncurtados[noticia._id.toString()] %>">
+                                    <a href="<%= linksEncurtados[noticia._id.toString()] %>" target="_blank"></a>
+                                </td>
+                                <td data-label="Acessos">
+                                    <a href="/noticia-acesso/getAcessos/<%= noticia._id %>"
+                                        title="Ver detalhes de acessos" style="text-decoration: none; color: #004488;">
+                                        👁️ <%= acessosMap[noticia._id.toString()] || 0 %>
+                                    </a>
+                                </td>
+                                <td data-label="Ações">
+                                    <a href="/noticia/view/<%= noticia._id %>/<%= noticia.usuario._id %>"
+                                        class="btn btn-visualizar" title="Visualizar">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/noticia/editar/<%= noticia._id %>" class="btn btn-editar" title="Alterar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="/noticia/excluir/<%= noticia._id %>" class="btn btn-excluir"
+                                        onclick="return confirm('Deseja realmente excluir esta notícia?')"
+                                        title="Excluir">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+
+                                    <% if (noticia.status) { %>
+                                        <!-- Status true: mostrar botão Desativar -->
+                                        <a href="/noticia/desativar/<%= noticia._id %>" class="btn btn-desativar"
+                                            onclick="return confirm('Deseja realmente desativar esta notícia?')"
+                                            title="Desativar">
+                                            <i class="fas fa-ban"></i>
+                                        </a>
+                                        <% } else { %>
+                                            <!-- Status false: mostrar botão Ativar -->
+                                            <a href="/noticia/ativar/<%= noticia._id %>" class="btn btn-ativar"
+                                                onclick="return confirm('Deseja realmente ativar esta notícia?')"
+                                                title="Ativar">
+                                                <i class="fas fa-check-circle"></i>
+                                            </a>
+                                            <% } %>
+                                </td>
+                            </tr>
+                            <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+</body>
+<script>
+    function truncarTexto(texto, limite) {
+        if (texto.length > limite) {
+            return texto.slice(0, limite) + "...";
+        }
+        return texto;
+    }
+
+    // Quando a página carregar, aplica truncagem a todas as células da coluna com a classe "titulo-coluna"
+    window.onload = function () {
+        const colunas = document.querySelectorAll(".titulo-coluna");
+        colunas.forEach(function (el) {
+            el.textContent = truncarTexto(el.textContent.trim(), 20); // por exemplo, 100 caracteres
+        });
+
+        const colunasLink = document.querySelectorAll(".link-coluna");
+        colunasLink.forEach(function (td) {
+            const linkCompleto = td.getAttribute("data-link");
+            const aTag = td.querySelector("a");
+            const textoTruncado = truncarTexto(linkCompleto, 40);
+            aTag.textContent = textoTruncado;
+        });
+
+    };
+</script>
+
+
+</html>

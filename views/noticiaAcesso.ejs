@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Acessos da Notícia</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #999;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        a.mapa-link {
+            text-decoration: none;
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Acessos da Notícia</h1>
+
+    <h2><%= noticia.titulo %></h2>
+    <p><strong>Descrição:</strong> <%= noticia.descricao %></p>
+    <p><strong>Data:</strong> <%= noticia.data %></p>
+
+    <h3>Total de acessos: <%= acessos.length %></h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Mapa</th> <!-- 🔥 Nova coluna -->
+                <th>Data/Hora</th>
+                <th>IP</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Dispositivo</th>
+               
+               
+            </tr>
+        </thead>
+        <tbody>
+            <% acessos.forEach(acesso => { %>
+                <tr>
+                    <td>
+                        <% if (acesso.latitude && acesso.longitude) { %>
+                            <a class="mapa-link" 
+                               href="https://www.google.com/maps/search/?api=1&query=<%= acesso.latitude %>,<%= acesso.longitude %>" 
+                               target="_blank" 
+                               title="Abrir no Google Maps">
+                                🗺️
+                            </a>
+                        <% } else { %>
+                            -
+                        <% } %>
+                    </td>
+                    <td><%= new Date(acesso.horario).toLocaleString() %></td>
+                    <td><%= acesso.ip %></td>
+                    <td><%= acesso.latitude || '-' %></td>
+                    <td><%= acesso.longitude || '-' %></td>
+                    <td><%= acesso.dispositivo %></td>
+                    
+                    
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+</body>
+</html>
