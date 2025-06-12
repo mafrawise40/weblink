@@ -5,7 +5,7 @@ const DB_PASSWORD = encodeURIComponent('9fX25aNisrBbryaq');
 
 const connectDB = async () => {
   try {
-    mongoose.connect(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@link.ramjwob.mongodb.net/?retryWrites=true&w=majority&appName=link`, {
+    mongoose.connect(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@link.ramjwob.mongodb.net/link?retryWrites=true&w=majority&appName=link`, {
         useNewUrlParser: true,
         useUnifiedTopology: true
       })
