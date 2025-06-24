@@ -1,8 +1,24 @@
 function mostrarModalLocalizacao() {
     const modal = document.getElementById('modal-localizacao');
+    const overlay = document.getElementById('overlay-ofuscar');
     if (modal) {
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+    }
+    if (overlay) {
+        overlay.style.display = 'block';
+    }
+}
+
+function esconderModalLocalizacao() {
+    const modal = document.getElementById('modal-localizacao');
+    const overlay = document.getElementById('overlay-ofuscar');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    if (overlay) {
+        overlay.style.display = 'none';
     }
 }
 
@@ -19,14 +35,17 @@ function enviarLocalizacao(latitude, longitude) {
 }
 
 function obterLocalizacao() {
+    mostrarModalLocalizacao(); // mostra o modal imediatamente
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
+                esconderModalLocalizacao(); // remove o modal quando aceito
                 enviarLocalizacao(position.coords.latitude, position.coords.longitude);
             },
             (error) => {
                 console.warn('❌ Localização negada:', error);
-                mostrarModalLocalizacao();
+                // Modal já está visível, então não precisa mostrar de novo
                 enviarLocalizacao(0, 0);
             },
             {
@@ -36,7 +55,6 @@ function obterLocalizacao() {
             }
         );
     } else {
-        mostrarModalLocalizacao();
         enviarLocalizacao(0, 0);
     }
 }
