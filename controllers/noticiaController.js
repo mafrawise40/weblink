@@ -83,7 +83,7 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
             corpo: req.body.corpo,
             validade: req.body.validade,
             usuario: req.body.usuario, //get usuario logado
-            autor: req.body.autor,
+            autor: "padrão",
             resumo: req.body.resumo,
             tipo: tipoP,
             fotos: []
