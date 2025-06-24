@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const moment = require('moment-timezone');
 const NoticiaAcesso = require('../model/noticia_acesso');
 const Noticia = require('../model/noticia');
 
@@ -37,19 +38,24 @@ router.get('/getAcessos/:idNoticia', async (req, res) => {
     const { idNoticia } = req.params;
 
     try {
-        // 🔸 Primeiro busca a notícia pelo ID
         const noticia = await Noticia.findById(idNoticia);
 
         if (!noticia) {
             return res.status(404).send('Notícia não encontrada');
         }
 
-        // 🔸 Depois busca os acessos dessa notícia
-        const acessos = await NoticiaAcesso.find({ noticia: idNoticia })
-            .populate('usuario') // opcional, caso queira dados do usuário
+        const acessosRaw = await NoticiaAcesso.find({ noticia: idNoticia })
+            .populate('usuario')
             .sort({ horario: -1 });
 
-        // 🔸 Renderiza a view passando a notícia e os acessos
+        // 🔄 Formatar horário para o fuso de Brasília antes de enviar para a view
+        const acessos = acessosRaw.map(acesso => ({
+            ...acesso.toObject(), // transforma para objeto puro
+            horarioFormatado: moment(acesso.horario)
+                .tz('America/Sao_Paulo')
+                .format('DD/MM/YYYY HH:mm:ss')
+        }));
+
         res.render('noticiaAcesso', { noticia, acessos });
 
     } catch (err) {
