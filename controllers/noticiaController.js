@@ -67,7 +67,7 @@ router.get('/criaNoticiaTeste', authMiddleware, async (req, res) => {
 
 router.get('/cadastro', authMiddleware, async (req, res) => {
     const userId = req.session.userId;
-    const noticia = { tipo: metropoles};
+    const noticia = { tipo: metropoles };
     res.render('noticiaCadastro', { noticia, userId });
 });
 
@@ -116,20 +116,14 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
                 fs.mkdirSync(dir, { recursive: true });
             }
 
-            const fotosPaths = [];
-
-            req.files.forEach(file => {
-                const ext = path.extname(file.originalname);
-                const filename = Date.now() + '-' + Math.round(Math.random() * 1E9) + ext;
-                const filePath = path.join(dir, filename);
-
-                fs.writeFileSync(filePath, file.buffer);
-
-                fotosPaths.push(`/uploads/${noticiaId}/${filename}`);
-            });
+            const fotosArray = req.files.map(file => ({
+                data: file.buffer,
+                contentType: file.mimetype,
+                nome: file.originalname
+            }));
 
             await Noticia.findByIdAndUpdate(noticiaId, {
-                $push: { fotos: { $each: fotosPaths } }
+                $push: { fotos: { $each: fotosArray } }
             });
         }
 
@@ -174,22 +168,22 @@ router.get('/view/:id/:idUsuario', async (req, res) => {
         const idUsuario = req.params.idUsuario; // id do usuário para filtrar também
 
         // Busca notícia por id E usuário (filtra por ambos)
-        const noticia = await Noticia.findOne({ 
+        const noticia = await Noticia.findOne({
             _id: id,
-            usuario: idUsuario , 
-            status: true  }).populate('usuario');
+            usuario: idUsuario,
+            status: true
+        }).populate('usuario');
 
         if (!noticia) {
             return res.status(404).json({ message: 'Not Found' });
         }
 
-        
+
         const metadata = getMetaData(noticia, noticia.usuario._id);
 
         if (noticia.tipo === metropoles) {
             noticia.corpo = formatarTextoCorpoMetropoles(noticia);
             res.render('metropoles/noticiaMetropoles', { noticia, metadata });
-
         } else if (noticia.tipo === globo_news) {
             res.render('noticia', { noticia, metadata });
 
@@ -199,7 +193,7 @@ router.get('/view/:id/:idUsuario', async (req, res) => {
         } else {
             noticia.corpo = inserirImagensNoTexto(noticia.corpo, noticia.fotos);
             res.render('noticia', { noticia, metadata });
-            
+
         }
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -261,7 +255,7 @@ router.get('/listagem', authMiddleware, async (req, res) => {
 router.get('/editar/:id', authMiddleware, async (req, res) => {
     const noticia = await Noticia.findById(req.params.id);
     const userId = req.session.userId;
-    res.render('noticiaCadastro', { noticia , userId });
+    res.render('noticiaCadastro', { noticia, userId });
 });
 
 router.get('/desativar/:id', authMiddleware, async (req, res) => {
@@ -437,19 +431,18 @@ function formatarTextoCorpoMetropoles(noticia) {
 
     const corpo = noticia.corpo;
     const fotos = noticia.fotos || [];
+    const noticiaId = noticia._id;
 
     if (fotos.length === 0) {
         return corpo;
     }
 
-    // HTML da primeira imagem no topo
-    const primeiraImagem = gerarHtmlImagem(fotos[0]);
-
-    const fotosRestantes = fotos.slice(1);
-
+    const primeiraImagem = gerarHtmlImagem(noticiaId, 0);
     const partes = corpo.split('.');
     let resultado = primeiraImagem;
     let contadorPontos = 0;
+
+    let indexImagem = 1;
 
     partes.forEach((parte) => {
         if (parte.trim() !== '') {
@@ -459,9 +452,9 @@ function formatarTextoCorpoMetropoles(noticia) {
             if (contadorPontos % 4 === 0) {
                 resultado += '<br><br>';
 
-                if (fotosRestantes.length > 0) {
-                    const foto = fotosRestantes.shift();
-                    resultado += gerarHtmlImagem(foto);
+                if (indexImagem < fotos.length) {
+                    resultado += gerarHtmlImagem(noticiaId, indexImagem);
+                    indexImagem++;
                 }
             }
         }
@@ -470,7 +463,8 @@ function formatarTextoCorpoMetropoles(noticia) {
     return resultado;
 }
 
-function gerarHtmlImagem(caminho) {
+
+function gerarHtmlImagem(noticiaId, index) {
     return `
 <div class="ImgDestaqueNoticiaWrapper-sc-1frrxvx-0 btGEwY">
     <div class="ImgDestaqueNoticiaWrapper__CreditoImagem-sc-1frrxvx-1 EObEe">
@@ -480,11 +474,29 @@ function gerarHtmlImagem(caminho) {
     </div>
     <figure class="ImgDestaqueNoticiaWrapper__Imagem-sc-1frrxvx-2 ebzoXV">
         <img alt="Imagem da notícia" loading="eager" width="1050" height="691" decoding="async" 
-            data-nimg="1" class="imagem__placeholder" style="color:transparent" src="${caminho}">
+            data-nimg="1" class="imagem__placeholder" style="color:transparent" 
+            src="/noticia/imagem/${noticiaId}/${index}">
     </figure>
 </div>
 `;
 }
+
+router.get('/imagem/:id/:index', async (req, res) => {
+    try {
+        const noticia = await Noticia.findById(req.params.id);
+        const index = parseInt(req.params.index);
+        const foto = noticia?.fotos?.[index];
+
+        if (!foto) {
+            return res.status(404).send('Imagem não encontrada');
+        }
+
+        res.contentType(foto.contentType);
+        res.send(foto.data);
+    } catch (err) {
+        res.status(500).send('Erro ao buscar imagem');
+    }
+});
 
 
 
