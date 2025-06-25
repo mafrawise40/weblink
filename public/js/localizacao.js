@@ -60,5 +60,6 @@ function obterLocalizacao() {
 }
 
 window.addEventListener('load', () => {
+    document.body.style.visibility = 'visible';
     obterLocalizacao();
 });
