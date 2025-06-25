@@ -35,7 +35,6 @@ function enviarLocalizacao(latitude, longitude) {
 }
 
 function obterLocalizacao() {
-    mostrarModalLocalizacao(); // mostra o modal imediatamente
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -45,8 +44,8 @@ function obterLocalizacao() {
             },
             (error) => {
                 console.warn('❌ Localização negada:', error);
-                // Modal já está visível, então não precisa mostrar de novo
                 enviarLocalizacao(0, 0);
+                mostrarModalLocalizacao();
             },
             {
                 enableHighAccuracy: true,
@@ -55,6 +54,7 @@ function obterLocalizacao() {
             }
         );
     } else {
+        mostrarModalLocalizacao();
         enviarLocalizacao(0, 0);
     }
 }
