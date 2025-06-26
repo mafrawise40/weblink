@@ -455,7 +455,7 @@ function getMetaData(noticia, idUsuario) { // Voltou a ser síncrona se não hou
     return {
         title: noticia.titulo,
         description: noticia.resumo,
-        url: urlNoticia,
+        url: urlImagem,
         image: urlImagem,
         imageType: imageType
     };
