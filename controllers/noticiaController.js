@@ -149,7 +149,8 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
                     fotosParaSalvarNoDB.push({
                         contentType: TARGET_MIMETYPE, // Sempre 'image/jpeg'
                         nome: file.originalname,
-                        path: publicPath
+                        path: publicPath,
+                        data: file.buffer,
                     });
 
                 } catch (processingError) {
