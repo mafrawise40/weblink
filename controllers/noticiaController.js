@@ -6,6 +6,7 @@ const NoticiaAcesso = require('../model/noticia_acesso');
 const { urlBase } = require('../config/global');
 const { metropoles, recibo_pix, globo_news } = require('../enums/TipoNoticia');
 const axios = require('axios');
+const sharp = require('sharp'); 
 
 
 
@@ -75,7 +76,6 @@ router.get('/cadastro', authMiddleware, async (req, res) => {
 
 router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, res) => {
     try {
-
         let tipoP = req.body.tipo;
 
         const noticia = new Noticia({
@@ -93,7 +93,6 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
         const noticiaId = novaNoticia._id.toString();
 
         if (tipoP === "recibo_pix") {
-
             const tipoPix = new TipoPix({
                 nomePagante: req.body.nomePagante,
                 chave: req.body.chave,
@@ -105,7 +104,6 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
                 descricao: req.body.descricao,
                 noticiaId: noticiaId
             });
-
             await tipoPix.save();
 
         } else {//noticia comum
@@ -116,34 +114,64 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
                 fs.mkdirSync(dir, { recursive: true });
             }
 
-             const fotosParaSalvarNoDB = []; 
+            const fotosParaSalvarNoDB = [];
 
-            // Iterar sobre cada arquivo enviado para salvar no disco e coletar o caminho
+            // Definir as propriedades alvo da imagem
+            const TARGET_WIDTH = 1050;
+            const TARGET_HEIGHT = 691;
+            const TARGET_FORMAT = 'png';
+            const TARGET_MIMETYPE = 'image/png';
+
+            // Iterar sobre cada arquivo enviado para processar e salvar
             for (const file of req.files) {
-                // Gerar um nome de arquivo único para evitar colisões
-                const fileName = `${Date.now()}-${file.originalname}`;
-                const filePath = path.join(dir, fileName); // Caminho completo no servidor
+                // Gerar um nome de arquivo único para o PNG de saída
+                const outputFileName = `${Date.now()}-${noticiaId}.${TARGET_FORMAT}`;
+                const outputPath = path.join(dir, outputFileName); // Caminho completo no servidor
 
-                // Escrever o buffer do arquivo no sistema de arquivos
-                fs.writeFileSync(filePath, file.buffer); // Sincronizado para garantir que o arquivo foi salvo antes de continuar
+                try {
+                    // Processar a imagem com Sharp
+                    const processedBuffer = await sharp(file.buffer)
+                        .resize(TARGET_WIDTH, TARGET_HEIGHT, {
+                            fit: sharp.fit.cover, // Preenche as dimensões, cortando o que sobra
+                            position: sharp.strategy.attention // Tenta focar na parte mais interessante
+                        })
+                        .toFormat(TARGET_FORMAT) // Força o formato para PNG
+                        .toBuffer();
 
-                // Construir o caminho relativo ou URL pública para o banco de dados
-                // Assumindo que 'public' é a raiz do seu servidor de arquivos estáticos
-                const publicPath = `/uploads/${noticiaId}/${fileName}`;
+                    // Escrever o buffer processado no sistema de arquivos
+                    fs.writeFileSync(outputPath, processedBuffer);
 
-                fotosParaSalvarNoDB.push({
-                    data: file.buffer, 
-                    contentType: file.mimetype,
-                    nome: file.originalname,
-                    path: publicPath // Salva o caminho público para a imagem
-                });
+                    // Construir o caminho público (URL relativa)
+                    const publicPath = `/uploads/${noticiaId}/${outputFileName}`;
+
+                    fotosParaSalvarNoDB.push({
+                        data: file.buffer,
+                        contentType: TARGET_MIMETYPE, // Sempre PNG agora
+                        nome: file.originalname, // Mantém o nome original se quiser, mas o arquivo é outro
+                        path: publicPath // Salva o caminho público para a imagem PNG
+                    });
+
+                } catch (processingError) {
+                    console.error(`Erro ao processar imagem para a notícia ${noticia._id}:`, processingError);
+                    res.status(500).send('Erro ao processar imagem para a notícia.');
+                    // Em caso de erro, você pode optar por:
+                    // 1. Pular esta imagem
+                    // 2. Salvar a imagem original sem processar (menos recomendado para o seu caso)
+                    // 3. Usar um caminho para uma imagem de fallback padrão
+                    // Por simplicidade, aqui vamos pular a imagem que deu erro de processamento.
+                }
             }
 
-            await Noticia.findByIdAndUpdate(noticiaId, {
-                $push: { fotos: { $each: fotosParaSalvarNoDB } }
-            });
+            // Atualizar a notícia com as informações das fotos processadas
+            if (fotosParaSalvarNoDB.length > 0) { // Só atualiza se houver fotos processadas com sucesso
+                await Noticia.findByIdAndUpdate(noticiaId, {
+                    $push: { fotos: { $each: fotosParaSalvarNoDB } }
+                });
+            } else {
+                 // Se nenhuma foto foi salva devido a erros, você pode lidar com isso aqui
+                  res.status(400).send('Nenhuma imagem válida foi processada.');
+            }
         }
-
 
         res.redirect('/noticia/listagem');
     } catch (err) {
