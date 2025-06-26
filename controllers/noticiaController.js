@@ -419,7 +419,7 @@ function getMetaData(noticia, idUsuario) {
             'image/svg+xml': 'svg'
         };
         const ext = extMap[foto.contentType] || 'jpg'; // fallback para jpg se desconhecido
-        urlImagem = `${URLBase}/imagem/${noticia._id}/0.${ext}`;
+        urlImagem = `${URLBase}/noticia/imagem/${noticia._id}/0.${ext}`;
     }
 
     return {
