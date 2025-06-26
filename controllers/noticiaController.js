@@ -406,6 +406,7 @@ function getMetaData(noticia, idUsuario) {
     const urlNoticia = `${URLBase}/noticia/view/${noticia._id}/${idUsuario}`;
 
     let urlImagem = `${URLBase}/default-image.png`;
+    let imageType = 'image/png';
 
     if (noticia.fotos && noticia.fotos.length > 0) {
         const foto = noticia.fotos[0];
@@ -420,13 +421,15 @@ function getMetaData(noticia, idUsuario) {
         };
         const ext = extMap[foto.contentType] || 'jpg'; // fallback para jpg se desconhecido
         urlImagem = `${URLBase}/noticia/imagem/${noticia._id}/0.${ext}`;
+        imageType = foto.contentType;
     }
 
     return {
         title: noticia.titulo,
         description: noticia.resumo,
         url: urlNoticia,
-        image: urlImagem
+        image: urlImagem,
+        imageType: imageType
     };
 }
 
