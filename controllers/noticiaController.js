@@ -6,7 +6,7 @@ const NoticiaAcesso = require('../model/noticia_acesso');
 const { urlBase } = require('../config/global');
 const { metropoles, recibo_pix, globo_news } = require('../enums/TipoNoticia');
 const axios = require('axios');
-const sharp = require('sharp'); 
+const sharp = require('sharp');
 
 
 
@@ -116,49 +116,47 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
 
             const fotosParaSalvarNoDB = [];
 
-            // Definir as propriedades alvo da imagem
+            // Propriedades ALVO da imagem (tudo para JPEG otimizado)
             const TARGET_WIDTH = 1050;
             const TARGET_HEIGHT = 691;
-            const TARGET_FORMAT = 'png';
-            const TARGET_MIMETYPE = 'image/png';
+            const JPEG_QUALITY = 80; // Qualidade para JPEGs (pode ajustar entre 0-100. 80 é um bom equilíbrio)
+            const TARGET_FORMAT = 'jpeg';
+            const TARGET_MIMETYPE = 'image/jpeg';
 
-            // Iterar sobre cada arquivo enviado para processar e salvar
             for (const file of req.files) {
-                // Gerar um nome de arquivo único para o PNG de saída
-                const outputFileName = `${Date.now()}-${noticiaId}.${TARGET_FORMAT}`;
-                const outputPath = path.join(dir, outputFileName); // Caminho completo no servidor
+                const baseFileName = `${Date.now()}-${noticiaId}`; // Nome base
+                const outputFileName = `${baseFileName}.${TARGET_FORMAT}`; // Sempre .jpeg
+                const outputPath = path.join(dir, outputFileName);
 
                 try {
-                    // Processar a imagem com Sharp
+                    // Processar a imagem com Sharp: redimensionar e converter para JPEG
                     const processedBuffer = await sharp(file.buffer)
                         .resize(TARGET_WIDTH, TARGET_HEIGHT, {
                             fit: sharp.fit.cover, // Preenche as dimensões, cortando o que sobra
                             position: sharp.strategy.attention // Tenta focar na parte mais interessante
                         })
-                        .toFormat(TARGET_FORMAT) // Força o formato para PNG
+                        .toFormat(TARGET_FORMAT) // **FORÇA O FORMATO PARA JPEG**
+                        .jpeg({ quality: JPEG_QUALITY }) // Aplica a qualidade JPEG
                         .toBuffer();
 
-                    // Escrever o buffer processado no sistema de arquivos
-                    fs.writeFileSync(outputPath, processedBuffer);
+                        console.log("Processado e lido com sucesso")
 
-                    // Construir o caminho público (URL relativa)
+                    fs.writeFileSync(outputPath, processedBuffer);
+                    
+
                     const publicPath = `/uploads/${noticiaId}/${outputFileName}`;
 
                     fotosParaSalvarNoDB.push({
-                        data: file.buffer,
-                        contentType: TARGET_MIMETYPE, // Sempre PNG agora
-                        nome: file.originalname, // Mantém o nome original se quiser, mas o arquivo é outro
-                        path: publicPath // Salva o caminho público para a imagem PNG
+                        contentType: TARGET_MIMETYPE, // Sempre 'image/jpeg'
+                        nome: file.originalname,
+                        path: publicPath
                     });
 
                 } catch (processingError) {
                     console.error(`Erro ao processar imagem para a notícia ${noticia._id}:`, processingError);
-                    res.status(500).send('Erro ao processar imagem para a notícia.');
                     // Em caso de erro, você pode optar por:
                     // 1. Pular esta imagem
-                    // 2. Salvar a imagem original sem processar (menos recomendado para o seu caso)
-                    // 3. Usar um caminho para uma imagem de fallback padrão
-                    // Por simplicidade, aqui vamos pular a imagem que deu erro de processamento.
+                    // 2. Usar um caminho para uma imagem de fallback padrão (ex: "/uploads/error.jpeg")
                 }
             }
 
@@ -168,8 +166,8 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
                     $push: { fotos: { $each: fotosParaSalvarNoDB } }
                 });
             } else {
-                 // Se nenhuma foto foi salva devido a erros, você pode lidar com isso aqui
-                  res.status(400).send('Nenhuma imagem válida foi processada.');
+                // Se nenhuma foto foi salva devido a erros, você pode lidar com isso aqui
+                res.status(400).send('Nenhuma imagem válida foi processada.');
             }
         }
 
