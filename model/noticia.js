@@ -8,7 +8,8 @@ const NoticiaSchema = new mongoose.Schema({
     fotos: [{
         data: Buffer,
         contentType: String,
-        nome: String // opcional, se quiser guardar o nome original
+        nome: String, // opcional, se quiser guardar o nome original
+        path: String,
     }],
     criadoEm: { type: Date, default: Date.now },
     atualizadoEm: { type: Date },

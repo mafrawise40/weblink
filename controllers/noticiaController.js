@@ -116,11 +116,26 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
                 fs.mkdirSync(dir, { recursive: true });
             }
 
-            const fotosArray = req.files.map(file => ({
-                data: file.buffer,
-                contentType: file.mimetype,
-                nome: file.originalname
-            }));
+            // Iterar sobre cada arquivo enviado para salvar no disco e coletar o caminho
+            for (const file of req.files) {
+                // Gerar um nome de arquivo único para evitar colisões
+                const fileName = `${Date.now()}-${file.originalname}`;
+                const filePath = path.join(dir, fileName); // Caminho completo no servidor
+
+                // Escrever o buffer do arquivo no sistema de arquivos
+                fs.writeFileSync(filePath, file.buffer); // Sincronizado para garantir que o arquivo foi salvo antes de continuar
+
+                // Construir o caminho relativo ou URL pública para o banco de dados
+                // Assumindo que 'public' é a raiz do seu servidor de arquivos estáticos
+                const publicPath = `/uploads/${noticiaId}/${fileName}`;
+
+                fotosParaSalvarNoDB.push({
+                    data: file.buffer, 
+                    contentType: file.mimetype,
+                    nome: file.originalname,
+                    path: publicPath // Salva o caminho público para a imagem
+                });
+            }
 
             await Noticia.findByIdAndUpdate(noticiaId, {
                 $push: { fotos: { $each: fotosArray } }
@@ -399,13 +414,13 @@ function inserirImagensNoTexto(texto, arrayFotos) {
     return textoFinal.trim();
 }
 
-function getMetaData(noticia, idUsuario) {
+function getMetaData(noticia, idUsuario) { // Voltou a ser síncrona se não houver operações assíncronas
     if (!noticia) return {};
 
     const URLBase = urlBase;
     const urlNoticia = `${URLBase}/noticia/view/${noticia._id}/${idUsuario}`;
 
-    let urlImagem = `${URLBase}/default-image.png`;
+    let urlImagem = `${URLBase}/default-image.png`; // Imagem padrão de fallback
     let imageType = 'image/png';
 
     if (noticia.fotos && noticia.fotos.length > 0) {
@@ -419,9 +434,20 @@ function getMetaData(noticia, idUsuario) {
             'image/bmp': 'bmp',
             'image/svg+xml': 'svg'
         };
-        const ext = extMap[foto.contentType] || 'jpg'; // fallback para jpg se desconhecido
-        urlImagem = `${URLBase}/noticia/imagem/${noticia._id}/0.${ext}`;
-        imageType = foto.contentType;
+
+        // Prioriza foto.path se existir (indicando que a imagem foi salva no disco no upload)
+        if (foto.path) {
+            // Se foto.path for '/uploads/ID/nome_arquivo.png', a URL será:
+            // https://metropoles-link.up.railway.app/uploads/ID/nome_arquivo.png
+            urlImagem = `${URLBase}${foto.path}`;
+            imageType = foto.contentType;
+        } else if (foto.data) { // Se a imagem ainda estiver como Buffer no DB (para notícias antigas)
+            // Mantém a lógica de usar a rota dinâmica para servir o blob
+            const ext = extMap[foto.contentType] || 'jpg';
+            urlImagem = `${URLBase}/noticia/imagem/${noticia._id}/0.${ext}`;
+            imageType = foto.contentType;
+        }
+        // Se neither foto.path nor foto.data exists, it will use the default-image.png fallback.
     }
 
     return {
