@@ -402,9 +402,15 @@ function inserirImagensNoTexto(texto, arrayFotos) {
 function getMetaData(noticia, idUsuario) {
     if (!noticia) return {};
 
-    const URLBase = urlBase; // 🔥 Substitua pela URL real do seu site
+    const URLBase = urlBase; 
+
     const urlNoticia = `${URLBase}/noticia/view/${noticia._id}/${idUsuario}`;
-    const urlImagem = noticia.fotos.length > 0 ? `${URLBase}${noticia.fotos[0]}` : `${URLBase}/default-image.png`;
+
+    // Gera a URL para a imagem servida pelo endpoint
+    const temFoto = noticia.fotos && noticia.fotos.length > 0;
+    const urlImagem = temFoto
+        ? `${URLBase}/imagem/${noticia._id}/0`
+        : `${URLBase}/default-image.png`;
 
     return {
         title: noticia.titulo,
@@ -413,6 +419,7 @@ function getMetaData(noticia, idUsuario) {
         image: urlImagem
     };
 }
+
 
 
 
