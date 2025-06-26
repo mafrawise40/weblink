@@ -402,15 +402,25 @@ function inserirImagensNoTexto(texto, arrayFotos) {
 function getMetaData(noticia, idUsuario) {
     if (!noticia) return {};
 
-    const URLBase = urlBase; 
-
+    const URLBase = urlBase;
     const urlNoticia = `${URLBase}/noticia/view/${noticia._id}/${idUsuario}`;
 
-    // Gera a URL para a imagem servida pelo endpoint
-    const temFoto = noticia.fotos && noticia.fotos.length > 0;
-    const urlImagem = temFoto
-        ? `${URLBase}/imagem/${noticia._id}/0`
-        : `${URLBase}/default-image.png`;
+    let urlImagem = `${URLBase}/default-image.png`;
+
+    if (noticia.fotos && noticia.fotos.length > 0) {
+        const foto = noticia.fotos[0];
+        const extMap = {
+            'image/jpeg': 'jpeg',
+            'image/jpg': 'jpg',
+            'image/png': 'png',
+            'image/webp': 'webp',
+            'image/gif': 'gif',
+            'image/bmp': 'bmp',
+            'image/svg+xml': 'svg'
+        };
+        const ext = extMap[foto.contentType] || 'jpg'; // fallback para jpg se desconhecido
+        urlImagem = `${URLBase}/imagem/${noticia._id}/0.${ext}`;
+    }
 
     return {
         title: noticia.titulo,
@@ -488,7 +498,7 @@ function gerarHtmlImagem(noticiaId, index) {
 `;
 }
 
-router.get('/imagem/:id/:index', async (req, res) => {
+router.get('/imagem/:id/:index.:ext', async (req, res) => {
     try {
         const noticia = await Noticia.findById(req.params.id);
         const index = parseInt(req.params.index);
