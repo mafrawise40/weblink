@@ -498,7 +498,7 @@ function gerarHtmlImagem(noticiaId, index) {
 `;
 }
 
-router.get('/imagem/:id/:index.:ext', async (req, res) => {
+router.get('/imagem/:id/:index.:ext?', async (req, res) => {
     try {
         const noticia = await Noticia.findById(req.params.id);
         const index = parseInt(req.params.index);
