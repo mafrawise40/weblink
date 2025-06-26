@@ -116,6 +116,8 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
                 fs.mkdirSync(dir, { recursive: true });
             }
 
+             const fotosParaSalvarNoDB = []; 
+
             // Iterar sobre cada arquivo enviado para salvar no disco e coletar o caminho
             for (const file of req.files) {
                 // Gerar um nome de arquivo único para evitar colisões
@@ -138,7 +140,7 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
             }
 
             await Noticia.findByIdAndUpdate(noticiaId, {
-                $push: { fotos: { $each: fotosArray } }
+                $push: { fotos: { $each: fotosParaSalvarNoDB } }
             });
         }
 
