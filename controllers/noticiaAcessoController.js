@@ -97,10 +97,10 @@ router.get('/getAcessosJson/:idNoticia', async (req, res) => {
 function dispararEventoAtualizarAcessoListagem(novoAcesso, idUsuario, idNoticia, req) {
 
     const wss = req.app.get('wss');
-    console.log("entrando no wss");
+    //console.log("entrando no wss");
     //console.log(wss);
     wss.clients.forEach((client) => {
-        console.log("disparando...");
+        //console.log("disparando...");
         if (client.readyState === 1) {
 
             let send = JSON.stringify({
@@ -111,8 +111,7 @@ function dispararEventoAtualizarAcessoListagem(novoAcesso, idUsuario, idNoticia,
                     horario: moment(novoAcesso.horario).tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm:ss')
                 }
             });
-            console.log(send);
-
+            //console.log(send);
             client.send(send);
         }
     });
