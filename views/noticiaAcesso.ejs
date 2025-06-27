@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <title>Acessos da Notícia</title>
@@ -9,29 +10,41 @@
             border-collapse: collapse;
             margin-top: 20px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #999;
             padding: 8px;
             text-align: center;
         }
+
         th {
             background-color: #f0f0f0;
         }
+
         a.mapa-link {
             text-decoration: none;
             color: blue;
         }
     </style>
 </head>
+
 <body>
 
     <h1>Acessos da Notícia</h1>
 
-    <h2><%= noticia.titulo %></h2>
-    <p><strong>Descrição:</strong> <%= noticia.descricao %></p>
-    <p><strong>Data:</strong> <%= noticia.data %></p>
+    <h2>
+        <%= noticia.titulo %>
+    </h2>
+    <p><strong>Descrição:</strong>
+        <%= noticia.descricao %>
+    </p>
+    <p><strong>Data:</strong>
+        <%= noticia.data %>
+    </p>
 
-    <h3>Total de acessos: <%= acessos.length %></h3>
+    <h3>Total de acessos: <%= acessos.length %>
+    </h3>
 
     <table>
         <thead>
@@ -42,36 +55,120 @@
                 <th>Latitude</th>
                 <th>Longitude</th>
                 <th>Dispositivo</th>
-               
-               
+
+
             </tr>
         </thead>
-        <tbody>
-            <% acessos.forEach(acesso => { %>
+        <tbody id="tabela-acessos-body">
+            <% acessos.forEach(acesso=> { %>
                 <tr>
                     <td>
                         <% if (acesso.latitude && acesso.longitude) { %>
-                            <a class="mapa-link" 
-                               href="https://www.google.com/maps/search/?api=1&query=<%= acesso.latitude %>,<%= acesso.longitude %>" 
-                               target="_blank" 
-                               title="Abrir no Google Maps">
-                                🗺️
-                            </a>
-                        <% } else { %>
-                            -
-                        <% } %>
+                            <a class="mapa-link"
+                                href="https://www.google.com/maps/search/?api=1&query=<%= acesso.latitude %>,<%= acesso.longitude %>"
+                                target="_blank" title="Abrir no Google Maps">🗺️</a>
+                            <% } else { %>-<% } %>
                     </td>
-                    <td><%= new Date(acesso.horario).toLocaleString() %></td>
-                    <td><%= acesso.ip %></td>
-                    <td><%= acesso.latitude || '-' %></td>
-                    <td><%= acesso.longitude || '-' %></td>
-                    <td><%= acesso.dispositivo %></td>
-                    
-                    
+                    <td>
+                        <%= new Date(acesso.horario).toLocaleString() %>
+                    </td>
+                    <td>
+                        <%= acesso.ip %>
+                    </td>
+                    <td>
+                        <%= acesso.latitude || '-' %>
+                    </td>
+                    <td>
+                        <%= acesso.longitude || '-' %>
+                    </td>
+                    <td>
+                        <%= acesso.dispositivo %>
+                    </td>
                 </tr>
-            <% }) %>
+                <% }) %>
         </tbody>
+
     </table>
 
 </body>
+
+<script>
+
+
+
+    const urlBase = '<%= urlBase %>';
+    const protocoloWS = urlBase.includes('localhost') ? 'ws' : 'wss';
+    const wsUrl = urlBase.replace(/^https?/, protocoloWS);
+
+    console.log(wsUrl);
+    const socket = new WebSocket(wsUrl);
+
+    socket.onopen = () => console.log('WebSocket conectado:', wsUrl);
+    socket.onerror = (err) => console.error('Erro WebSocket:', err);
+
+    socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'ACESSO_ATUALIZADO' && data.idNoticia === '<%= noticia._id %>') {
+            //console.log('🔔 Novo acesso registrado:', data);
+            // Atualizar a lista com fetch ou recarregamento
+            //location.reload(); // Ou use AJAX para atualizar dinamicamente
+            atualizarAcessosViaAjax();
+        }
+    };
+
+
+    function atualizarAcessosViaAjax() {
+        fetch(`/noticia-acesso/getAcessosJson/<%= noticia._id %>`)
+            .then(res => res.json())
+            .then(acessos => {
+                const tbody = document.getElementById('tabela-acessos-body');
+                tbody.innerHTML = ''; // Limpa os dados atuais
+
+                acessos.forEach(acesso => {
+                    const tr = document.createElement('tr');
+
+                    const mapaTd = document.createElement('td');
+                    if (acesso.latitude && acesso.longitude) {
+                        mapaTd.innerHTML = `<a class="mapa-link" href="https://www.google.com/maps/search/?api=1&query=${acesso.latitude},${acesso.longitude}" target="_blank" title="Abrir no Google Maps">🗺️</a>`;
+                    } else {
+                        mapaTd.textContent = '-';
+                    }
+
+                    const horarioTd = document.createElement('td');
+                    horarioTd.textContent = acesso.horarioFormatado;
+
+                    const ipTd = document.createElement('td');
+                    ipTd.textContent = acesso.ip;
+
+                    const latTd = document.createElement('td');
+                    latTd.textContent = acesso.latitude || '-';
+
+                    const longTd = document.createElement('td');
+                    longTd.textContent = acesso.longitude || '-';
+
+                    const dispositivoTd = document.createElement('td');
+                    dispositivoTd.textContent = acesso.dispositivo;
+
+                    tr.appendChild(mapaTd);
+                    tr.appendChild(horarioTd);
+                    tr.appendChild(ipTd);
+                    tr.appendChild(latTd);
+                    tr.appendChild(longTd);
+                    tr.appendChild(dispositivoTd);
+
+                    tbody.appendChild(tr);
+                });
+
+                // Também atualiza o total de acessos:
+                const totalElement = document.querySelector('h3');
+                if (totalElement) {
+                    totalElement.textContent = `Total de acessos: ${acessos.length}`;
+                }
+            });
+    }
+
+</script>
+
+
 </html>

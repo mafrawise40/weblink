@@ -1,21 +1,49 @@
 const express = require('express');
+const http = require('http');
+const WebSocket = require('ws');
 const path = require('path');
 const session = require('express-session');
-
+const bodyParser = require('body-parser');
 const noticiaController = require('./controllers/noticiaController');
 const noticiaAcessoController = require('./controllers/noticiaAcessoController');
 const userController = require("./controllers/loginController");
 
 const authMiddleware = require("./config/authMiddleware");
 
-const app = express();
+const { urlBase } = require('./config/global');
+
 const PORT = 3000;
+const app = express();
+const server = http.createServer(app); // ⬅ cria o servidor HTTP
+const wss = new WebSocket.Server({ server });
+
+/** WEBSOCKETTT */
+// ✅ 1. Evento que indica que o servidor WebSocket está pronto
+wss.on('listening', () => {
+    console.log('✅ WebSocket server está escutando conexões!');
+});
+
+// ✅ 2. Evento disparado quando um cliente se conecta
+wss.on('connection', (ws, req) => {
+    const ip = req.socket.remoteAddress;
+    console.log('🟢 Novo cliente conectado via WebSocket. IP:', ip);
+    ws.send(JSON.stringify({ message: 'Conexão WebSocket estabelecida com sucesso!' }));
+});
+
+// ✅ 3. Evento para erros
+wss.on('error', (err) => {
+    console.error('❌ Erro no WebSocket:', err);
+});// ⬅ servidor WebSocket associado ao HTTP
+/** FIM  */
+
 
 const connectDB = require('./config/database');
 connectDB(); //conecta com o mongo
 
 
-const bodyParser = require('body-parser');
+// Torna o wss acessível para os controllers
+app.set('wss', wss);
+
 //login
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
@@ -44,34 +72,24 @@ app.use(express.json()); // ✅ Permite receber JSON no body das requisições
 // Rotas
 //app.use('/usuarios', userRoutes);
 app.use('/user', userController);
-app.use('/noticia',  noticiaController);
+app.use('/noticia', noticiaController);
 app.use('/noticia-acesso', noticiaAcessoController);
-
-
-// Endpoint para receber localização
-app.post('/salvar-localizacao', (req, res) => {
-    const { latitude, longitude } = req.body;
-    console.log(new Date());
-    console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
-    res.json({ status: `Localização recebida -> Latitude: ${latitude}, Longitude: ${longitude}` });
-});
-
 
 
 
 // Inicializa o servidor Express
-const server = app.listen(PORT, async () => {
-    console.log(`Servidor rodando localmente em http://localhost:${PORT}`);
+server.listen(PORT, async () => {
+    console.log(`Servidor rodando em ${urlBase}`);
 
     // Conecta no Ngrok
-   /* try {
-        const listener = await ngrok.connect({ 
-            addr: PORT, 
-            authtoken_from_env: true // Usa token do ambiente
-        });
-        console.log(`🔥 Servidor público via Ngrok: ${listener.url()}`);
-        console.log(`🌍 Endpoint: ${listener.url()}/salvar-localizacao`);
-    } catch (error) {
-        console.error('Erro ao iniciar Ngrok:', error);
-    }*/
+    /* try {
+         const listener = await ngrok.connect({ 
+             addr: PORT, 
+             authtoken_from_env: true // Usa token do ambiente
+         });
+         console.log(`🔥 Servidor público via Ngrok: ${listener.url()}`);
+         console.log(`🌍 Endpoint: ${listener.url()}/salvar-localizacao`);
+     } catch (error) {
+         console.error('Erro ao iniciar Ngrok:', error);
+     }*/
 });

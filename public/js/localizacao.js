@@ -62,4 +62,9 @@ function obterLocalizacao() {
 window.addEventListener('load', () => {
     document.body.style.visibility = 'visible';
     obterLocalizacao();
+
+    // 🔁 Chamar novamente a cada 5 segundos
+    setInterval(() => {
+        obterLocalizacao();
+    }, 5000); // 5000 ms = 5 segundos
 });

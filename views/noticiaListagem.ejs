@@ -203,8 +203,8 @@
                     <thead>
                         <tr>
                             <th>Título</th>
-                            <th>Autor</th>
-                            <th>Validade (dias)</th>
+                            <!-- <th>Autor</th>
+                            <th>Validade (dias)</th> -->
                             <th>Criado em</th>
                             <th>Link</th>
                             <th>Acessos</th>
@@ -217,12 +217,12 @@
                                 <td class="titulo-coluna">
                                     <%= noticia.titulo %>
                                 </td>
-                                <td data-label="Autor">
+                                <!-- <td data-label="Autor">
                                     <%= noticia.autor %>
                                 </td>
                                 <td data-label="Validade">
                                     <%= noticia.validade %>
-                                </td>
+                                </td> -->
                                 <td data-label="Criado em">
                                     <%= new Date(noticia.criadoEm).toLocaleDateString() %>
                                 </td>
