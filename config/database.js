@@ -13,10 +13,14 @@ const mongo_railway_url = process.env.MONGO_URL;
 
 const connectDB = async () => {
   try {
+    if (!mongo_railway_url) {
+      throw new Error('MONGO_URL não está definida.');
+    }
+
     mongoose.connect(mongo_railway_url, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      })
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    })
     console.log('✅ Conectado ao MongoDB (db link)');
   } catch (err) {
     console.error('❌ Erro na conexão com MongoDB:', err);

@@ -37,9 +37,9 @@ router.get('/create', async (req, res) => {
     const hash = await bcrypt.hash(senha, 10);
   
     const user = new User({
-      username: 'admin2',
+      username: 'admin',
       passwordHash: hash,
-      email: 'admin2@email.com',
+      email: 'admin@email.com',
       ativo: true,
       criadoEm: new Date(),
     });

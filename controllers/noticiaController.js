@@ -80,6 +80,7 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
 
         const noticia = new Noticia({
             titulo: req.body.titulo,
+            subtitulo: req.body.subtitulo,
             corpo: req.body.corpo,
             validade: req.body.validade,
             usuario: req.body.usuario, //get usuario logado
