@@ -207,7 +207,7 @@ router.get('/noticiaTeste/:id/:idUsuario', authMiddleware, async (req, res) => {
 
 
 
-router.get('/view/:id', async (req, res) => {
+router.get('/view/:id/:idUsuario', async (req, res) => {
     try {
         const id = req.params.id;  // pega o id da URL
         const idUsuario = req.params.idUsuario; // id do usuário para filtrar também
@@ -215,6 +215,7 @@ router.get('/view/:id', async (req, res) => {
         // Busca notícia por id E usuário (filtra por ambos)
         const noticia = await Noticia.findOne({
             _id: id,
+            usuario: idUsuario,
             status: true
         }).populate('usuario');
 
@@ -281,7 +282,7 @@ router.get('/listagem', authMiddleware, async (req, res) => {
         // Gerar links encurtados
         const linksEncurtados = {};
         for (const noticia of noticias) {
-            const urlOriginal = `${urlBase}/noticia/view/${noticia._id}`;
+            const urlOriginal = `${urlBase}/noticia/view/${noticia._id}/${usuarioId}`;
             //const link = await gerarLinkEncurtado(urlOriginal);
             linksEncurtados[noticia._id.toString()] = urlOriginal;
         }
@@ -447,7 +448,7 @@ function getMetaData(noticia, idUsuario) { // Voltou a ser síncrona se não hou
     if (!noticia) return {};
 
     const URLBase = urlBase;
-    const urlNoticia = `${URLBase}/noticia/view/${noticia._id}`;
+    const urlNoticia = `${URLBase}/noticia/view/${noticia._id}/${idUsuario}`;
 
     let urlImagem = `${URLBase}/default-image.png`; // Imagem padrão de fallback
     let imageType = 'image/png';
