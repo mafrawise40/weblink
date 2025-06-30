@@ -1,11 +1,19 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
 
-const DB_USER = 'rodrigojmsleite'
-const DB_PASSWORD = encodeURIComponent('9fX25aNisrBbryaq');
+//ATLAS MONGO
+//const DB_USER = 'rodrigojmsleite'
+//const DB_PASSWORD = encodeURIComponent('9fX25aNisrBbryaq');
+//URL = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@link.ramjwob.mongodb.net/link?retryWrites=true&w=majority&appName=link`
+
+//railway
+//local const mongo_railway_url=mongodb://mongo:1oQZXKMbEzgyHuKQ0aVPnPEynZATwpcP@nozomi.proxy.rlwy.net:59141
+
+const mongo_railway_url = process.env.MONGO_URL;
 
 const connectDB = async () => {
   try {
-    mongoose.connect(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@link.ramjwob.mongodb.net/link?retryWrites=true&w=majority&appName=link`, {
+    mongoose.connect(mongo_railway_url, {
         useNewUrlParser: true,
         useUnifiedTopology: true
       })
