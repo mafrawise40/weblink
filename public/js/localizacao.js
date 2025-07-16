@@ -34,6 +34,7 @@ function enviarLocalizacao(latitude, longitude) {
     });
 }
 
+/*SEM PROMISSE
 function obterLocalizacao() {
 
     if (navigator.geolocation) {
@@ -57,6 +58,35 @@ function obterLocalizacao() {
         mostrarModalLocalizacao();
         enviarLocalizacao(0, 0);
     }
+}*/
+
+function obterLocalizacao() {
+    return new Promise((resolve) => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    esconderModalLocalizacao();
+                    enviarLocalizacao(position.coords.latitude, position.coords.longitude);
+                    resolve(true); // sucesso
+                },
+                (error) => {
+                    console.warn('❌ Localização negada:', error);
+                    enviarLocalizacao(0, 0);
+                    mostrarModalLocalizacao();
+                    resolve(false); // negado ou erro
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            mostrarModalLocalizacao();
+            enviarLocalizacao(0, 0);
+            resolve(false);
+        }
+    });
 }
 
 

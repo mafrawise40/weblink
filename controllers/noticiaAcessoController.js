@@ -159,4 +159,21 @@ router.post('/add-foto/:idNoticia/:idUsuario', upload.single('foto'), async (req
     }
 });
 
+// Servir imagem de acesso
+router.get('/foto/:idAcesso', async (req, res) => {
+    try {
+        const acesso = await NoticiaAcesso.findById(req.params.idAcesso);
+        if (!acesso || !acesso.foto || !acesso.foto.data) {
+            return res.status(404).send('Foto não encontrada');
+        }
+
+        res.contentType(acesso.foto.contentType || 'image/jpeg');
+        res.send(acesso.foto.data);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erro ao carregar a foto');
+    }
+});
+
+
 module.exports = router;

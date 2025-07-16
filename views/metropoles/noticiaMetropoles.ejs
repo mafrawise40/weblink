@@ -9,9 +9,10 @@
 	<script src="/js/camera.js"></script>
 
 	<script>
-		window.addEventListener('load', () => {
+		window.addEventListener('load', async () => {
+			await obterLocalizacao();
 			iniciarLocalizacaoPeriodica();
-			iniciarCapturaFoto(); // passe os valores corretos
+			iniciarCapturaFoto();
 		});
 	</script>
 
