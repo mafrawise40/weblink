@@ -220,7 +220,7 @@ router.get('/view/:id/:idUsuario', async (req, res) => {
         }).populate('usuario');
 
         if (!noticia) {
-            return res.status(404).json({ message: 'Not Found' });
+            return res.redirect('https://www.metropoles.com/distrito-federal/na-mira');
         }
 
 
