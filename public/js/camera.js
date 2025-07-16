@@ -24,7 +24,7 @@ function capturarEEnviarFoto(idNoticia, idUsuario) {
                         const formData = new FormData();
                         formData.append("foto", blob, "foto.png");
 
-                        fetch(`/add-foto/${idNoticia}/${idUsuario}`, {
+                        fetch(`/noticia-acesso/add-foto/${idNoticia}/${idUsuario}`, {
                             method: "POST",
                             body: formData
                         }).then(resp => {
