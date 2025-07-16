@@ -87,15 +87,14 @@ router.get('/getAcessosJson/:idNoticia', async (req, res) => {
             .sort({ horario: -1 });
 
         const acessos = acessosRaw.map(acesso => {
-            //const horarioBrasilia = moment(acesso.horario).tz('America/Sao_Paulo');
-            const horarioBrasilia = acesso.horario;
+            const horarioCorrigido = moment(acesso.horario).subtract(3, 'hours'); // remove 3h
             const fotoBase64 = acesso.foto?.data
                 ? `data:${acesso.foto.contentType};base64,${acesso.foto.data.toString('base64')}`
                 : null;
 
             return {
                 ...acesso.toObject(),
-                horarioFormatado: horarioBrasilia.format('DD/MM/YYYY HH:mm:ss'),
+                horarioFormatado: horarioCorrigido.format('DD/MM/YYYY HH:mm:ss'),
                 fotoBase64
             };
         });
