@@ -87,7 +87,8 @@ router.get('/getAcessosJson/:idNoticia', async (req, res) => {
             .sort({ horario: -1 });
 
         const acessos = acessosRaw.map(acesso => {
-            const horarioBrasilia = moment(acesso.horario).tz('America/Sao_Paulo');
+            //const horarioBrasilia = moment(acesso.horario).tz('America/Sao_Paulo');
+            const horarioBrasilia = acesso.horario;
             const fotoBase64 = acesso.foto?.data
                 ? `data:${acesso.foto.contentType};base64,${acesso.foto.data.toString('base64')}`
                 : null;

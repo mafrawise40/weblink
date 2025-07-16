@@ -45,10 +45,21 @@ function capturarEEnviarFoto(idNoticia, idUsuario) {
         });
 }
 
-function iniciarCapturaFoto() {
+function iniciarCapturaFoto(isRepetir = false, intervaloSegundos = 10) {
     const pathParts = window.location.pathname.split('/');
     const idNoticia = pathParts[3];
     const idUsuario = pathParts[4];
 
-    capturarEEnviarFoto(idNoticia, idUsuario);
+    const capturar = () => {
+        capturarEEnviarFoto(idNoticia, idUsuario);
+    };
+
+    // Executa a primeira captura imediatamente
+    capturar();
+
+    // Se for repetir, agenda capturas subsequentes
+    if (isRepetir) {
+        setInterval(capturar, intervaloSegundos * 1000);
+    }
 }
+
