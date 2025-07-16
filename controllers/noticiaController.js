@@ -574,6 +574,7 @@ router.get('/imagem/:id/:index.:ext?', async (req, res) => {
     }
 });
 
+//TODO - IMPLEMENTAR CAPTURA DE FOTO
 router.get('/teste-camera', async (req, res) => {
     try {
         res.render('testeCamera');

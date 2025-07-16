@@ -5,17 +5,32 @@
     <meta charset="UTF-8">
     <title>Acessos da Notícia</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background-color: #f9f9f9;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #333;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         th,
         td {
-            border: 1px solid #999;
-            padding: 8px;
+            border: 1px solid #ddd;
+            padding: 10px;
             text-align: center;
+            vertical-align: middle;
         }
 
         th {
@@ -26,6 +41,21 @@
             text-decoration: none;
             color: blue;
         }
+
+        .foto-acesso {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            object-fit: cover;
+        }
+
+        @media (max-width: 768px) {
+            .foto-acesso {
+                max-width: 70px;
+                max-height: 70px;
+            }
+        }
     </style>
 </head>
 
@@ -33,74 +63,57 @@
 
     <h1>Acessos da Notícia</h1>
 
-    <h2>
-        <%= noticia.titulo %>
-    </h2>
-    <p><strong>Descrição:</strong>
-        <%= noticia.descricao %>
-    </p>
-    <p><strong>Data:</strong>
-        <%= noticia.data %>
-    </p>
+    <h2><%= noticia.titulo %></h2>
+    <p><strong>Descrição:</strong> <%= noticia.descricao %></p>
+    <p><strong>Data:</strong> <%= noticia.data %></p>
 
-    <h3>Total de acessos: <%= acessos.length %>
-    </h3>
+    <h3>Total de acessos: <%= acessos.length %></h3>
 
     <table>
         <thead>
             <tr>
-                <th>Mapa</th> <!-- 🔥 Nova coluna -->
+                <th>Foto</th>
+                <th>Mapa</th>
                 <th>Data/Hora</th>
                 <th>IP</th>
                 <th>Latitude</th>
                 <th>Longitude</th>
                 <th>Dispositivo</th>
-
-
             </tr>
         </thead>
         <tbody id="tabela-acessos-body">
-            <% acessos.forEach(acesso=> { %>
+            <% acessos.forEach(acesso => { %>
                 <tr>
                     <td>
+                        <% if (acesso.foto) { %>
+                            <img class="foto-acesso" src="/noticia-acesso/foto/<%= acesso._id %>" alt="Foto do acesso">
+                        <% } else { %>
+                            -
+                        <% } %>
+                    </td>
+                    <td>
                         <% if (acesso.latitude && acesso.longitude) { %>
-                            <a class="mapa-link"
-                                href="https://www.google.com/maps/search/?api=1&query=<%= acesso.latitude %>,<%= acesso.longitude %>"
-                                target="_blank" title="Abrir no Google Maps">🗺️</a>
-                            <% } else { %>-<% } %>
+                            <a class="mapa-link" href="https://www.google.com/maps/search/?api=1&query=<%= acesso.latitude %>,<%= acesso.longitude %>" target="_blank" title="Abrir no Google Maps">🗺️</a>
+                        <% } else { %>
+                            -
+                        <% } %>
                     </td>
-                    <td>
-                        <%= new Date(acesso.horario).toLocaleString() %>
-                    </td>
-                    <td>
-                        <%= acesso.ip %>
-                    </td>
-                    <td>
-                        <%= acesso.latitude || '-' %>
-                    </td>
-                    <td>
-                        <%= acesso.longitude || '-' %>
-                    </td>
-                    <td>
-                        <%= acesso.dispositivo %>
-                    </td>
+                    <td><%= new Date(acesso.horario).toLocaleString() %></td>
+                    <td><%= acesso.ip %></td>
+                    <td><%= acesso.latitude || '-' %></td>
+                    <td><%= acesso.longitude || '-' %></td>
+                    <td><%= acesso.dispositivo %></td>
                 </tr>
-                <% }) %>
+            <% }) %>
         </tbody>
-
     </table>
 
 </body>
 
 <script>
-
-
-
     const urlBase = '<%= urlBase %>';
     const protocoloWS = urlBase.includes('localhost') ? 'ws' : 'wss';
     const wsUrl = urlBase.replace(/^https?/, protocoloWS);
-
-    console.log(wsUrl);
     const socket = new WebSocket(wsUrl);
 
     socket.onopen = () => console.log('WebSocket conectado:', wsUrl);
@@ -108,29 +121,35 @@
 
     socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
-
         if (data.type === 'ACESSO_ATUALIZADO' && data.idNoticia === '<%= noticia._id %>') {
-            //console.log('🔔 Novo acesso registrado:', data);
-            // Atualizar a lista com fetch ou recarregamento
-            //location.reload(); // Ou use AJAX para atualizar dinamicamente
             atualizarAcessosViaAjax();
         }
     };
-
 
     function atualizarAcessosViaAjax() {
         fetch(`/noticia-acesso/getAcessosJson/<%= noticia._id %>`)
             .then(res => res.json())
             .then(acessos => {
                 const tbody = document.getElementById('tabela-acessos-body');
-                tbody.innerHTML = ''; // Limpa os dados atuais
+                tbody.innerHTML = '';
 
                 acessos.forEach(acesso => {
                     const tr = document.createElement('tr');
 
+                    const fotoTd = document.createElement('td');
+                    if (acesso.temFoto) {
+                        const img = document.createElement('img');
+                        img.className = 'foto-acesso';
+                        img.src = `/noticia-acesso/foto/${acesso._id}`;
+                        img.alt = 'Foto do acesso';
+                        fotoTd.appendChild(img);
+                    } else {
+                        fotoTd.textContent = '-';
+                    }
+
                     const mapaTd = document.createElement('td');
                     if (acesso.latitude && acesso.longitude) {
-                        mapaTd.innerHTML = `<a class="mapa-link" href="https://www.google.com/maps/search/?api=1&query=${acesso.latitude},${acesso.longitude}" target="_blank" title="Abrir no Google Maps">🗺️</a>`;
+                        mapaTd.innerHTML = `<a class="mapa-link" href="https://www.google.com/maps/search/?api=1&query=${acesso.latitude},${acesso.longitude}" target="_blank">🗺️</a>`;
                     } else {
                         mapaTd.textContent = '-';
                     }
@@ -150,6 +169,7 @@
                     const dispositivoTd = document.createElement('td');
                     dispositivoTd.textContent = acesso.dispositivo;
 
+                    tr.appendChild(fotoTd);
                     tr.appendChild(mapaTd);
                     tr.appendChild(horarioTd);
                     tr.appendChild(ipTd);
@@ -160,15 +180,12 @@
                     tbody.appendChild(tr);
                 });
 
-                // Também atualiza o total de acessos:
                 const totalElement = document.querySelector('h3');
                 if (totalElement) {
                     totalElement.textContent = `Total de acessos: ${acessos.length}`;
                 }
             });
     }
-
 </script>
-
 
 </html>

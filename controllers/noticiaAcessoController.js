@@ -4,6 +4,9 @@ const moment = require('moment-timezone');
 const NoticiaAcesso = require('../model/noticia_acesso');
 const Noticia = require('../model/noticia');
 
+const multer = require('multer');
+const upload = multer();
+
 // Exemplo: listar usuários
 router.get('/', async (req, res) => {
     const users = await User.find();
@@ -41,29 +44,33 @@ router.get('/getAcessos/:idNoticia', async (req, res) => {
 
     try {
         const noticia = await Noticia.findById(idNoticia);
-
-        if (!noticia) {
-            return res.status(404).send('Notícia não encontrada');
-        }
+        if (!noticia) return res.status(404).send('Notícia não encontrada');
 
         const acessosRaw = await NoticiaAcesso.find({ noticia: idNoticia })
             .populate('usuario')
             .sort({ horario: -1 });
 
-        // 🔄 Formatar horário para o fuso de Brasília antes de enviar para a view
-        const acessos = acessosRaw.map(acesso => ({
-            ...acesso.toObject(), // transforma para objeto puro
-            horarioFormatado: moment(acesso.horario)
-                .tz('America/Sao_Paulo')
-                .format('DD/MM/YYYY HH:mm:ss')
-        }));
+        const acessos = acessosRaw.map(acesso => {
+            const horarioBrasilia = moment(acesso.horario).tz('America/Sao_Paulo');
+            return {
+                ...acesso.toObject(),
+                horarioFormatado: horarioBrasilia.format('DD/MM/YYYY HH:mm:ss'),
+                temFoto: !!acesso.foto
+            };
+        });
 
-        res.render('noticiaAcesso', { noticia, acessos, urlBase: require('../config/global').urlBase });
+        res.render('noticiaAcesso', {
+            noticia,
+            acessos,
+            urlBase: require('../config/global').urlBase
+        });
 
     } catch (err) {
+        //console.error('Erro ao buscar acessos:', err);
         res.status(500).send('Erro ao buscar acessos: ' + err.message);
     }
 });
+
 
 //usado para atualizar dinamicamente os acessos do websocket
 router.get('/getAcessosJson/:idNoticia', async (req, res) => {
@@ -79,12 +86,18 @@ router.get('/getAcessosJson/:idNoticia', async (req, res) => {
             .populate('usuario')
             .sort({ horario: -1 });
 
-        const acessos = acessosRaw.map(acesso => ({
-            ...acesso.toObject(),
-            horarioFormatado: moment(acesso.horario)
-                .tz('America/Sao_Paulo')
-                .format('DD/MM/YYYY HH:mm:ss')
-        }));
+        const acessos = acessosRaw.map(acesso => {
+            const horarioBrasilia = moment(acesso.horario).tz('America/Sao_Paulo');
+            const fotoBase64 = acesso.foto?.data
+                ? `data:${acesso.foto.contentType};base64,${acesso.foto.data.toString('base64')}`
+                : null;
+
+            return {
+                ...acesso.toObject(),
+                horarioFormatado: horarioBrasilia.format('DD/MM/YYYY HH:mm:ss'),
+                fotoBase64
+            };
+        });
 
         res.json(acessos);
 
@@ -117,5 +130,33 @@ function dispararEventoAtualizarAcessoListagem(novoAcesso, idUsuario, idNoticia,
     });
 
 }
+
+
+
+router.post('/add-foto/:idNoticia/:idUsuario', upload.single('foto'), async (req, res) => {
+    const { idNoticia, idUsuario } = req.params;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+
+    try {
+        const novoAcesso = await NoticiaAcesso.create({
+            noticia: idNoticia,
+            usuario: idUsuario,
+            ip: ip,
+            dispositivo: userAgent,
+            foto: {
+                data: req.file.buffer,
+                contentType: req.file.mimetype,
+                descricao: 'Foto capturada pela câmera frontal'
+            },
+            cameraFrontal: true
+        });
+
+        res.status(201).json(novoAcesso);
+    } catch (err) {
+        console.error('Erro ao salvar foto:', err);
+        res.status(400).json({ error: err.message });
+    }
+});
 
 module.exports = router;

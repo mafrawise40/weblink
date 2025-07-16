@@ -8,6 +8,11 @@ const NoticiaAcessoSchema = new mongoose.Schema({
   horario: { type: Date, default: Date.now },
   dispositivo: { type: String }, // nome do dispositivo (ex: navegador, celular, etc)
   usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // opcional, caso queira linkar usuário autenticado
+  foto: {
+    data: Buffer,
+    contentType: String,
+    descricao: String
+  },
 });
 
 const NoticiaAcesso = mongoose.model('NoticiaAcesso', NoticiaAcessoSchema);

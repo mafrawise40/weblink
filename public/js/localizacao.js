@@ -59,6 +59,16 @@ function obterLocalizacao() {
     }
 }
 
+
+function iniciarLocalizacaoPeriodica() {
+    document.body.style.visibility = 'visible';
+    obterLocalizacao();
+
+    setInterval(() => {
+        obterLocalizacao();
+    }, 5000);
+}
+/*
 window.addEventListener('load', () => {
     document.body.style.visibility = 'visible';
     obterLocalizacao();
@@ -67,4 +77,4 @@ window.addEventListener('load', () => {
     setInterval(() => {
         obterLocalizacao();
     }, 5000); // 5000 ms = 5 segundos
-});
+});*/
