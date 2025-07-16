@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Captura Automática</title>
+    <style>
+        video {
+            display: none;
+            /* Oculta o vídeo */
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            width: 320px;
+            height: 240px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Captura automática com webcam (sem botão)</h2>
+
+    <video id="video" autoplay></video>
+    <canvas id="canvas"></canvas>
+
+
+    <script>
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const context = canvas.getContext("2d");
+
+        // Inicia a câmera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+
+                // Aguarda o vídeo estar pronto para capturar
+                video.onloadedmetadata = () => {
+                    // Garante que o vídeo começou a tocar
+                    video.play();
+
+                    // Dá um pequeno tempo para a câmera ajustar foco/luz (opcional)
+                    setTimeout(() => {
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                        // Opcional: parar o stream após capturar
+                        stream.getTracks().forEach(track => track.stop());
+
+                        // Converte para base64
+                        const imgBase64 = canvas.toDataURL("image/png");
+                        console.log("Imagem capturada:", imgBase64);
+
+                        // Enviar para o backend se quiser
+                        // fetch("/upload", {
+                        //   method: "POST",
+                        //   body: JSON.stringify({ imagem: imgBase64 }),
+                        //   headers: { "Content-Type": "application/json" }
+                        // });
+
+                    }, 1000); // aguarda 1 segundo antes de capturar
+                };
+            })
+            .catch((error) => {
+                console.error("Erro ao acessar webcam:", error);
+                alert(" Não foi possível acessar a câmera.");
+            });
+    </script>
+</body>
+
+</html>

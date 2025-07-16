@@ -140,10 +140,10 @@ router.post('/salvar', authMiddleware, upload.array('fotos', 10), async (req, re
                         .jpeg({ quality: JPEG_QUALITY }) // Aplica a qualidade JPEG
                         .toBuffer();
 
-                        console.log("Processado e lido com sucesso")
+                    console.log("Processado e lido com sucesso")
 
                     fs.writeFileSync(outputPath, processedBuffer);
-                    
+
 
                     const publicPath = `/uploads/${noticiaId}/${outputFileName}`;
 
@@ -571,6 +571,14 @@ router.get('/imagem/:id/:index.:ext?', async (req, res) => {
         res.send(foto.data);
     } catch (err) {
         res.status(500).send('Erro ao buscar imagem');
+    }
+});
+
+router.get('/teste-camera', async (req, res) => {
+    try {
+        res.render('testeCamera');
+    } catch (err) {
+        res.status(500).send('erro ao testar pagina');
     }
 });
 
