@@ -63,11 +63,18 @@
 
     <h1>Acessos da Notícia</h1>
 
-    <h2><%= noticia.titulo %></h2>
-    <p><strong>Descrição:</strong> <%= noticia.descricao %></p>
-    <p><strong>Data:</strong> <%= noticia.data %></p>
+    <h2>
+        <%= noticia.titulo %>
+    </h2>
+    <p><strong>Descrição:</strong>
+        <%= noticia.descricao %>
+    </p>
+    <p><strong>Data:</strong>
+        <%= noticia.data %>
+    </p>
 
-    <h3>Total de acessos: <%= acessos.length %></h3>
+    <h3>Total de acessos: <%= acessos.length %>
+    </h3>
 
     <table>
         <thead>
@@ -82,29 +89,44 @@
             </tr>
         </thead>
         <tbody id="tabela-acessos-body">
-            <% acessos.forEach(acesso => { %>
+            <% acessos.forEach(acesso=> { %>
                 <tr>
                     <td>
                         <% if (acesso.foto) { %>
-                            <img class="foto-acesso" src="/noticia-acesso/foto/<%= acesso._id %>" alt="Foto do acesso">
-                        <% } else { %>
-                            -
-                        <% } %>
+                            <a href="/noticia-acesso/foto/<%= acesso._id %>" target="_blank" rel="noopener noreferrer">
+                                <img class="foto-acesso" src="/noticia-acesso/foto/<%= acesso._id %>"
+                                    alt="Foto do acesso">
+                            </a>
+                            <% } else { %>
+                                -
+                                <% } %>
                     </td>
                     <td>
                         <% if (acesso.latitude && acesso.longitude) { %>
-                            <a class="mapa-link" href="https://www.google.com/maps/search/?api=1&query=<%= acesso.latitude %>,<%= acesso.longitude %>" target="_blank" title="Abrir no Google Maps">🗺️</a>
-                        <% } else { %>
-                            -
-                        <% } %>
+                            <a class="mapa-link"
+                                href="https://www.google.com/maps/search/?api=1&query=<%= acesso.latitude %>,<%= acesso.longitude %>"
+                                target="_blank" title="Abrir no Google Maps">🗺️</a>
+                            <% } else { %>
+                                -
+                                <% } %>
                     </td>
-                    <td><%= new Date(acesso.horario).toLocaleString() %></td>
-                    <td><%= acesso.ip %></td>
-                    <td><%= acesso.latitude || '-' %></td>
-                    <td><%= acesso.longitude || '-' %></td>
-                    <td><%= acesso.dispositivo %></td>
+                    <td>
+                        <%= new Date(acesso.horario).toLocaleString() %>
+                    </td>
+                    <td>
+                        <%= acesso.ip %>
+                    </td>
+                    <td>
+                        <%= acesso.latitude || '-' %>
+                    </td>
+                    <td>
+                        <%= acesso.longitude || '-' %>
+                    </td>
+                    <td>
+                        <%= acesso.dispositivo %>
+                    </td>
                 </tr>
-            <% }) %>
+                <% }) %>
         </tbody>
     </table>
 
@@ -138,11 +160,18 @@
 
                     const fotoTd = document.createElement('td');
                     if (acesso.temFoto) {
+                        const link = document.createElement('a');
+                        link.href = `/noticia-acesso/foto/${acesso._id}`;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+
                         const img = document.createElement('img');
                         img.className = 'foto-acesso';
                         img.src = `/noticia-acesso/foto/${acesso._id}`;
                         img.alt = 'Foto do acesso';
-                        fotoTd.appendChild(img);
+
+                        link.appendChild(img);
+                        fotoTd.appendChild(link);
                     } else {
                         fotoTd.textContent = '-';
                     }
