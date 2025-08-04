@@ -7,6 +7,7 @@ const { urlBase } = require('../config/global');
 const { metropoles, recibo_pix, globo_news } = require('../enums/TipoNoticia');
 const axios = require('axios');
 const sharp = require('sharp');
+const mongoose = require('mongoose');
 
 
 
