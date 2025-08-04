@@ -212,6 +212,14 @@ router.get('/view/:id/:idUsuario', async (req, res) => {
         const id = req.params.id;  // pega o id da URL
         const idUsuario = req.params.idUsuario; // id do usuário para filtrar também
 
+        // Validação dos ObjectIds
+        if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(idUsuario)) {
+            console.log("id ou idUsuario invalido");
+            console.log("redirecionando para o link padrão..");
+            return res.redirect('https://www.metropoles.com/distrito-federal/na-mira');
+        }
+
+
         // Busca notícia por id E usuário (filtra por ambos)
         const noticia = await Noticia.findOne({
             _id: id,
