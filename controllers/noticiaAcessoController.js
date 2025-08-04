@@ -6,6 +6,9 @@ const Noticia = require('../model/noticia');
 
 const multer = require('multer');
 const upload = multer();
+const { urlBase } = require('../config/global');
+const { urlFaciaApi } = require('../config/global');
+const axios = require('axios');
 
 // Exemplo: listar usuários
 router.get('/', async (req, res) => {
@@ -31,6 +34,7 @@ router.post('/add/:idNoticia/:idUsuario', async (req, res) => {
         });
 
         dispararEventoAtualizarAcessoListagem(novoAcesso, idUsuario, idNoticia, req);
+        dispararNotificacaoNoBotTelegran(idNoticia);
 
         res.status(201).json(NoticiaAcesso);
     } catch (err) {
@@ -62,7 +66,7 @@ router.get('/getAcessos/:idNoticia', async (req, res) => {
         res.render('noticiaAcesso', {
             noticia,
             acessos,
-            urlBase: require('../config/global').urlBase
+            urlBase: urlBase
         });
 
     } catch (err) {
@@ -129,6 +133,25 @@ function dispararEventoAtualizarAcessoListagem(novoAcesso, idUsuario, idNoticia,
         }
     });
 
+}
+
+async function dispararNotificacaoNoBotTelegran(idNoticia) {
+    try {
+        if (!idNoticia) {
+            throw new Error('Notícia inválida ou sem ID');
+        }
+
+        const link = `${urlBase}/noticia-acesso/getAcessos/${idNoticia}`;
+
+        // Envia para o seu serviço do bot
+        const resposta = await axios.post(`${urlFaciaApi}/notificacao/enviarMensagem`, {
+            url: link
+        });
+
+        console.log('✅ Notificação enviada:', resposta.data);
+    } catch (erro) {
+        console.error('❌ Erro ao disparar notificação para o bot:', erro.message);
+    }
 }
 
 
