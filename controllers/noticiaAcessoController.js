@@ -34,7 +34,7 @@ router.post('/add/:idNoticia/:idUsuario', async (req, res) => {
         });
 
         dispararEventoAtualizarAcessoListagem(novoAcesso, idUsuario, idNoticia, req);
-        dispararNotificacaoNoBotTelegran(idNoticia);
+        dispararNotificacaoNoBotTelegran(idNoticia, ip);
 
         res.status(201).json(NoticiaAcesso);
     } catch (err) {
@@ -135,17 +135,17 @@ function dispararEventoAtualizarAcessoListagem(novoAcesso, idUsuario, idNoticia,
 
 }
 
-async function dispararNotificacaoNoBotTelegran(idNoticia) {
+async function dispararNotificacaoNoBotTelegran(idNoticia, ipUsuario) {
     try {
         if (!idNoticia) {
             throw new Error('Notícia inválida ou sem ID');
         }
 
         const link = `${urlBase}/noticia-acesso/getAcessos/${idNoticia}`;
-
         // Envia para o seu serviço do bot
         const resposta = await axios.post(`${urlFaciaApi}/notificacao/enviarMensagem`, {
-            url: link
+            url: link,
+            ip: ipUsuario
         });
 
         console.log('✅ Notificação enviada:', resposta.data);
