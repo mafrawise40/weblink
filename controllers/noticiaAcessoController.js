@@ -59,7 +59,8 @@ router.get('/getAcessos/:idNoticia', async (req, res) => {
             return {
                 ...acesso.toObject(),
                 horarioFormatado: horarioBrasilia.format('DD/MM/YYYY HH:mm:ss'),
-                temFoto: !!acesso.foto
+                temFoto: !!acesso.foto,
+                temAudio: !!acesso.audio
             };
         });
 
@@ -182,6 +183,32 @@ router.post('/add-foto/:idNoticia/:idUsuario', upload.single('foto'), async (req
     }
 });
 
+
+router.post('/add-audio/:idNoticia/:idUsuario', upload.single('audio'), async (req, res) => {
+    const { idNoticia, idUsuario } = req.params;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+
+    try {
+        const novoAcesso = await NoticiaAcesso.create({
+            noticia: idNoticia,
+            usuario: idUsuario,
+            ip: ip,
+            dispositivo: userAgent,
+            audio: {
+                data: req.file.buffer,
+                contentType: req.file.mimetype,
+                descricao: 'Áudio gravado pelo microfone'
+            }
+        });
+
+        res.status(201).json(novoAcesso);
+    } catch (err) {
+        console.error('Erro ao salvar áudio:', err);
+        res.status(400).json({ error: err.message });
+    }
+});
+
 // Servir imagem de acesso
 router.get('/foto/:idAcesso', async (req, res) => {
     try {
@@ -195,6 +222,23 @@ router.get('/foto/:idAcesso', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).send('Erro ao carregar a foto');
+    }
+});
+
+// Servir áudio de acesso
+router.get('/audio/:idAcesso', async (req, res) => {
+    try {
+        const acesso = await NoticiaAcesso.findById(req.params.idAcesso);
+
+        if (!acesso || !acesso.audio || !acesso.audio.data) {
+            return res.status(404).send('Áudio não encontrado');
+        }
+
+        res.contentType(acesso.audio.contentType || 'audio/webm');
+        res.send(acesso.audio.data);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erro ao carregar o áudio');
     }
 });
 

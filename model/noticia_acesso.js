@@ -13,6 +13,11 @@ const NoticiaAcessoSchema = new mongoose.Schema({
     contentType: String,
     descricao: String
   },
+  audio: {
+    data: Buffer,
+    contentType: String,
+    descricao: String
+  }
 });
 
 const NoticiaAcesso = mongoose.model('NoticiaAcesso', NoticiaAcessoSchema);

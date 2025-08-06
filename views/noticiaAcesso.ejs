@@ -81,6 +81,7 @@
             <tr>
                 <th>Foto</th>
                 <th>Mapa</th>
+                <th>Áudio</th>
                 <th>Data/Hora</th>
                 <th>IP</th>
                 <th>Latitude</th>
@@ -106,6 +107,15 @@
                             <a class="mapa-link"
                                 href="https://www.google.com/maps/search/?api=1&query=<%= acesso.latitude %>,<%= acesso.longitude %>"
                                 target="_blank" title="Abrir no Google Maps">🗺️</a>
+                            <% } else { %>
+                                -
+                                <% } %>
+                    </td>
+
+                    <td>
+                        <% if (acesso.audio) { %>
+                            <a href="/noticia-acesso/audio/<%= acesso._id %>" target="_blank"
+                                rel="noopener noreferrer">🔊 Ouvir</a>
                             <% } else { %>
                                 -
                                 <% } %>
@@ -183,6 +193,18 @@
                         mapaTd.textContent = '-';
                     }
 
+                    const audioTd = document.createElement('td');
+                    if (acesso.temAudio) {
+                        const audioLink = document.createElement('a');
+                        audioLink.href = `/noticia-acesso/audio/${acesso._id}`;
+                        audioLink.target = '_blank';
+                        audioLink.rel = 'noopener noreferrer';
+                        audioLink.textContent = '🔊 Ouvir';
+                        audioTd.appendChild(audioLink);
+                    } else {
+                        audioTd.textContent = '-';
+                    }
+
                     const horarioTd = document.createElement('td');
                     horarioTd.textContent = acesso.horarioFormatado;
 
@@ -205,6 +227,7 @@
                     tr.appendChild(latTd);
                     tr.appendChild(longTd);
                     tr.appendChild(dispositivoTd);
+                    tr.appendChild(audioTd);
 
                     tbody.appendChild(tr);
                 });

