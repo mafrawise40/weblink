@@ -33,13 +33,13 @@ router.get('/logout', (req, res) => {
 
 
 router.get('/create', async (req, res) => {
-    const senha = '123456';
+    const senha = '@li21@';
     const hash = await bcrypt.hash(senha, 10);
   
     const user = new User({
-      username: 'admin',
+      username: 'ali21',
       passwordHash: hash,
-      email: 'admin@email.com',
+      email: 'ali21@email.com',
       ativo: true,
       criadoEm: new Date(),
     });

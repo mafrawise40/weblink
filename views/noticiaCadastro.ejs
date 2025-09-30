@@ -44,7 +44,7 @@
 
         <h1>Cadastro de Fake</h1>
 
-        <form action="/noticia/salvar" method="POST" enctype="multipart/form-data">
+        <form id="form" action="/noticia/salvar" method="POST" enctype="multipart/form-data">
 
             <label for="tipo">Tipo:</label>
             <select id="tipo" name="tipo" required>
@@ -134,56 +134,63 @@
     const tipoSelect = document.getElementById('tipo');
     const tipoPixFields = document.getElementById('tipopix-fields');
     const noticiaFields = document.getElementById('noticia-fields');
+    const form = document.getElementById('form');
 
+    // Só exibe os blocos, sem mexer em required
     function toggleTipoPixFields() {
         if (tipoSelect.value === 'recibo_pix') {
             tipoPixFields.style.display = 'block';
             noticiaFields.style.display = 'none';
-
-            // Pix campos required
-            [...tipoPixFields.querySelectorAll('input, textarea')].forEach(field => {
-                field.required = true;
-            });
-            // Campos normais não required
-            [...noticiaFields.querySelectorAll('input, textarea')].forEach(field => {
-                field.required = false;
-            });
         } else {
             tipoPixFields.style.display = 'none';
             noticiaFields.style.display = 'block';
-
-            // Campos normais required
-            [...noticiaFields.querySelectorAll('input, textarea')].forEach(field => {
-                field.required = true;
-            });
-            // Pix campos não required e limpa valores
-            [...tipoPixFields.querySelectorAll('input, textarea')].forEach(field => {
-                field.required = false;
-                field.value = '';
-            });
         }
     }
 
-    // Executa no carregamento para respeitar o estado inicial do select
     toggleTipoPixFields();
-
-    // Escuta mudanças no select
     tipoSelect.addEventListener('change', toggleTipoPixFields);
 
-
+    // Validação no submit
     form.addEventListener('submit', function (e) {
-        console.log("ois")
         const corpo = document.querySelector('#corpo');
         corpo.value = quill.root.innerHTML;
 
-        // Validação: impede envio se o campo estiver vazio
-        if (corpo.value.trim() === '' || corpo.value.trim() === '<p><br></p>') {
-            e.preventDefault();
-            alert('O campo "Corpo da Notícia" não pode estar vazio.');
+        // Validação corpo
+        if (tipoSelect.value !== 'recibo_pix') {
+            if (corpo.value.trim() === '' || corpo.value.trim() === '<p><br></p>') {
+                e.preventDefault();
+                alert('O campo "Corpo da Notícia" não pode estar vazio.');
+                return;
+            }
         }
-    });
 
+        // Validação recibo PIX
+        if (tipoSelect.value === 'recibo_pix') {
+            const obrigatoriosPix = [
+                'nomePagante',
+                'chave',
+                'nomeRecebedor',
+                'cpfCnpj',
+                'valor',
+                'pspRecebedor',
+                'dataPagamento'
+            ];
+            for (let id of obrigatoriosPix) {
+                const campo = document.getElementById(id);
+                if (!campo.value.trim()) {
+                    e.preventDefault();
+                    alert(`O campo "${id}" é obrigatório.`);
+                    campo.focus();
+                    return;
+                }
+            }
+        }
+
+        // Mostra loading se passou na validação
+        document.getElementById('loading-overlay').style.display = 'flex';
+    });
 </script>
+
 
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <style>
@@ -210,21 +217,8 @@
         }
     });
 
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function (e) {
-        const corpo = document.querySelector('#corpo');
-        corpo.value = quill.root.innerHTML;
 
-        // Validação extra (se necessário)
-        if (corpo.value.trim() === '' || corpo.value.trim() === '<p><br></p>') {
-            e.preventDefault();
-            alert('O campo "Corpo da Notícia" não pode estar vazio.');
-            return;
-        }
-
-        // Mostra a tela de loading
-        document.getElementById('loading-overlay').style.display = 'flex';
-    });
+    
 </script>
 
 </html>

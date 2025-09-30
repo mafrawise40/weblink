@@ -206,18 +206,29 @@ router.get('/noticiaTeste/:id/:idUsuario', authMiddleware, async (req, res) => {
     }
 });
 
+const httpMetropolesPadrao = 'https://www.metropoles.com/distrito-federal/na-mira';
+const httpg1Padrao = 'https://g1.globo.com/df/distrito-federal/';
+const tipoPix = 'recibo_pix';
+const tipoMetropoles = 'metropoles';
+const tipoG1 = 'globo_news';
 
-
-router.get('/view/:id/:idUsuario', async (req, res) => {
+router.get('/view/:id/:idUsuario/:tipo', async (req, res) => {
     try {
         const id = req.params.id;  // pega o id da URL
         const idUsuario = req.params.idUsuario; // id do usuário para filtrar também
+        const tipo = req.params.tipo;
+
 
         // Validação dos ObjectIds
         if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(idUsuario)) {
             console.log("id ou idUsuario invalido");
             console.log("redirecionando para o link padrão..");
-            return res.redirect('https://www.metropoles.com/distrito-federal/na-mira');
+            if (tipo === tipoMetropoles) {
+                return res.redirect(httpMetropolesPadrao);
+            }
+            if (tipo === tipoG1) {
+                return res.redirect(httpg1Padrao);
+            }
         }
 
 
@@ -229,7 +240,12 @@ router.get('/view/:id/:idUsuario', async (req, res) => {
         }).populate('usuario');
 
         if (!noticia) {
-            return res.redirect('https://www.metropoles.com/distrito-federal/na-mira');
+            if (tipo === tipoMetropoles) {
+                return res.redirect(httpMetropolesPadrao);
+            }
+            if (tipo === tipoG1) {
+                return res.redirect(httpg1Padrao);
+            }
         }
 
 
@@ -239,7 +255,8 @@ router.get('/view/:id/:idUsuario', async (req, res) => {
             noticia.corpo = formatarTextoCorpoMetropoles(noticia);
             res.render('metropoles/noticiaMetropoles', { noticia, metadata });
         } else if (noticia.tipo === globo_news) {
-            res.render('noticia', { noticia, metadata });
+            noticia.corpo = formatarTextoCorpoMetropoles(noticia);
+            res.render('g1/g1df', { noticia, metadata });
 
         } else if (noticia.tipo === recibo_pix) {
             res.render('noticia', { noticia, metadata });
@@ -291,7 +308,7 @@ router.get('/listagem', authMiddleware, async (req, res) => {
         // Gerar links encurtados
         const linksEncurtados = {};
         for (const noticia of noticias) {
-            const urlOriginal = `${urlBase}/noticia/view/${noticia._id}/${usuarioId}`;
+            const urlOriginal = `${urlBase}/noticia/view/${noticia._id}/${usuarioId}/${noticia.tipo}`;
             //const link = await gerarLinkEncurtado(urlOriginal);
             linksEncurtados[noticia._id.toString()] = urlOriginal;
         }
@@ -457,7 +474,7 @@ function getMetaData(noticia, idUsuario) { // Voltou a ser síncrona se não hou
     if (!noticia) return {};
 
     const URLBase = urlBase;
-    const urlNoticia = `${URLBase}/noticia/view/${noticia._id}/${idUsuario}`;
+    const urlNoticia = `${URLBase}/noticia/view/${noticia._id}/${idUsuario}/${noticia.tipo}`;
 
     let urlImagem = `${URLBase}/default-image.png`; // Imagem padrão de fallback
     let imageType = 'image/png';
@@ -522,7 +539,14 @@ function formatarTextoCorpoMetropoles(noticia) {
         return corpo;
     }
 
-    const primeiraImagem = gerarHtmlImagem(noticiaId, 0);
+    let primeiraImagem = null;
+
+    if (noticia.tipo === tipoG1) {
+        primeiraImagem = gerarHtmlImagemG1(noticiaId, 0);
+    } else {
+        primeiraImagem = gerarHtmlImagem(noticiaId, 0);
+    }
+
     const partes = corpo.split('.');
     let resultado = primeiraImagem;
     let contadorPontos = 0;
@@ -534,11 +558,17 @@ function formatarTextoCorpoMetropoles(noticia) {
             resultado += parte + '.';
             contadorPontos++;
 
-            if (contadorPontos % 4 === 0) {
+            if (contadorPontos % 2 === 0) {
                 resultado += '<br><br>';
 
                 if (indexImagem < fotos.length) {
-                    resultado += gerarHtmlImagem(noticiaId, indexImagem);
+
+                    if (noticia.tipo === tipoG1) {
+                        resultado += gerarHtmlImagemG1(noticiaId, indexImagem);
+                    } else {
+                        resultado += gerarHtmlImagem(noticiaId, indexImagem);
+                    }
+
                     indexImagem++;
                 }
             }
@@ -564,6 +594,28 @@ function gerarHtmlImagem(noticiaId, index) {
     </figure>
 </div>
 `;
+}
+
+function gerarHtmlImagemG1(noticiaId, index) {
+    return `
+    <div >
+                               
+                                <div class="content-media-container glb-skeleton-box"
+                                    style="--skeleton-width: 100%; --skeleton-height: auto; padding-top: 56.25%">
+                                    <figure class="content-media-figure">
+                                     <img lightbox="lightbox-amp-carousel"
+                                            class="content-media-image"
+                                            src="/noticia/imagem/${noticiaId}/${index}"
+                                            alt="Divulgação"
+                                            width="100%" height="425px" layout="responsive" noloading> </amp-img>
+                                        
+                                    </figure>
+                                </div>
+                                <br/><br/>
+                                <p  style="font-size: 10px"  "> Divulgação — Foto: reprodução </p>
+                            </div>
+                            <br/><br/>
+    `;
 }
 
 router.get('/imagem/:id/:index.:ext?', async (req, res) => {
