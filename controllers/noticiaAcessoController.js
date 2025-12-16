@@ -36,7 +36,19 @@ router.post('/add/:idNoticia/:idUsuario', async (req, res) => {
         dispararEventoAtualizarAcessoListagem(novoAcesso, idUsuario, idNoticia, req);
         dispararNotificacaoNoBotTelegran(idNoticia, ip);
 
-        res.status(201).json(NoticiaAcesso);
+        // 3. Consulta o status atual da Notícia
+        const noticia = await Noticia.findById(idNoticia, 'status'); // Busca apenas o campo 'status'
+
+        if (!noticia) {
+            return res.status(400).json({ error: 'Notícia não encontrada.' });
+        }
+
+        // 4. Retorna o status da notícia junto com o status da requisição
+        res.status(201).json({
+            acesso: novoAcesso, // Retorna o objeto de acesso criado (opcional, mas útil)
+            noticiaStatus: noticia.status // O campo crucial para o frontend
+        });
+
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
